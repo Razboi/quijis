@@ -1,33 +1,65 @@
-// Switch the console.error function for a custom one that saves the log and handles it as usual
-const startRecordingConsoleErrors = () => {
-    console.log("here");
-    chrome.storage.sync.set({ consoleErrors: [] });
-    console.defaultError = console.error.bind(console);
-    console.error = function () {
-        console.log("handleConsoleErrors");
-        console.defaultError.apply(console, arguments);
-        chrome.storage.sync.get(['consoleErrors'], function ({ consoleErrors }) {
-            consoleErrors.push(Array.from(arguments));
-            chrome.storage.sync.set({ consoleErrors: consoleErrors });
+const captureUnhandledErrors = () => {
+    window.onerror = function (msg, url, lineNo, columnNo, error) {
+        chrome.storage.sync.get(["unhandledErrors"], function ({ unhandledErrors }) {
+            unhandledErrors.push(error.stack);
+            chrome.storage.sync.set({ unhandledErrors: unhandledErrors });
         });
     };
-    setTimeout(() => console.error("test"), 5000);
 }
 
-const stopRecordingConsoleErrors = () => {
-    chrome.storage.sync.get(['consoleErrors'], function ({ consoleErrors }) {
-        console.error = console.defaultError;
-        console.log(consoleErrors);
+const captureConsoleErrors = () => {
+    console.originalConsoleError = console.error;
+    console.error = function (error) {
+        chrome.storage.sync.get(["consoleErrors"], function ({ consoleErrors }) {
+            consoleErrors.push(error);
+            chrome.storage.sync.set({ consoleErrors: consoleErrors });
+            console.originalConsoleError(error);
+        });
+    };
+}
+
+const captureConsoleWarnings = () => {
+    console.originalConsoleWarn = console.warn;
+    console.warn = function (warning) {
+        chrome.storage.sync.get(["consoleWarnings"], function ({ consoleWarnings }) {
+            consoleWarnings.push(warning);
+            chrome.storage.sync.set({ consoleWarnings: consoleWarnings });
+            console.originalConsoleWarn(warning);
+        });
+    };
+}
+
+const startRecordingErrors = () => {
+    chrome.storage.sync.set({ unhandledErrors: [], consoleErrors: [], consoleWarnings: [] });
+    captureUnhandledErrors();
+    captureConsoleErrors();
+    captureConsoleWarnings();
+    setTimeout(() => {
+        console.error("test");
+        console.warn("testWarn");
+    }, 2000);
+}
+
+const stopRecordingErrors = () => {
+    chrome.storage.sync.get(["unhandledErrors", "consoleErrors", "consoleWarnings"], function ({ unhandledErrors, consoleErrors, consoleWarnings }) {
+        console.log("Unhandled errors: " + unhandledErrors);
+        console.log("Console errors: " + consoleErrors);
+        console.log("Console warnings: " + consoleWarnings);
+        console.error = console.originalConsoleError;
+        window.onerror = null;
     });
+    setTimeout(() => {
+        console.error("test");
+        console.warn("testWarn");
+    }, 2000);
 }
 
 chrome.runtime.onMessage.addListener(
     function (message) {
-        console.log(message);
         if (message == "startRecordingEvents") {
-            startRecordingConsoleErrors();
+            startRecordingErrors();
         } else if (message == "stopRecordingEvents") {
-            stopRecordingConsoleErrors();
+            stopRecordingErrors();
         }
     }
 );
