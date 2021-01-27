@@ -24,13 +24,19 @@ const sendMessageToCurrentTab = (message) => {
     });
 }
 
+const sendMessageToBackground = (message) => {
+    chrome.runtime.sendMessage(message);
+}
+
 recordButton.onclick = () => {
     chrome.storage.sync.get(['isRecording'], function ({ isRecording }) {
         if (!isRecording) {
-            sendMessageToCurrentTab("startRecordingEvents");
+            sendMessageToCurrentTab("startRecordingConsoleEvents");
+            sendMessageToBackground("startRecordingNetworkEvents");
             recordButton.textContent = "Detener grabación";
         } else {
-            sendMessageToCurrentTab("stopRecordingEvents");
+            sendMessageToCurrentTab("stopRecordingConsoleEvents");
+            sendMessageToBackground("stopRecordingNetworkEvents");
             recordButton.textContent = "Grabar eventos";
         }
         chrome.storage.sync.set({ isRecording: !isRecording });
