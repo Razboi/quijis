@@ -38,22 +38,36 @@ recordButton.onclick = () => {
 };
 
 createButton.onclick = () => {
-    const body = {
-        fields: {
-            project: {
-                key: TEST_PROJECT_KEY
-            },
-            summary: titleInput.value,
-            description: descriptionInput.value,
-            issuetype: {
-                name: "Bug"
-            }
+    chrome.storage.sync.get(["unhandledErrors", "consoleErrors", "consoleWarnings"], function ({ unhandledErrors, consoleErrors, consoleWarnings }) {
+        let description = descriptionInput.value;
+        if (unhandledErrors && unhandledErrors.length) {
+            description += `\n\n*Unhandled errors* (flag)${unhandledErrors.map(unhandledError => "\n{quote}" + unhandledError + "{quote}")}`;
         }
-    };
-    var xmlhttp = new XMLHttpRequest();
-    xmlhttp.open("POST", `${TEST_BASE_URL}/rest/api/2/issue`);
-    xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-    xmlhttp.send(JSON.stringify(body));
+        if (consoleErrors && consoleErrors.length) {
+            description += `\n\n*Console errors* (x)${consoleErrors.map(consoleError => "\n{quote}" + consoleError + "{quote}")}`;
+        }
+        if (consoleWarnings && consoleWarnings.length) {
+            description += `\n\n*Console warnings* (!)${consoleWarnings.map(consoleWarning => "\n{quote}" + consoleWarning + "{quote}")}`;
+        }
+        description += `\n\n_Generated with [Quijis|https://github.com/Razboi/quijis]_`;
+        const body = {
+            fields: {
+                project: {
+                    key: TEST_PROJECT_KEY
+                },
+                summary: titleInput.value,
+                description: description,
+                issuetype: {
+                    name: "Bug"
+                }
+            }
+        };
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.open("POST", `${TEST_BASE_URL}/rest/api/2/issue`);
+        xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        xmlhttp.send(JSON.stringify(body));
+        chrome.storage.sync.set({ unhandledErrors: [], consoleErrors: [], consoleWarnings: [] });
+    });
 };
 
 initializeUI();

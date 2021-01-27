@@ -37,6 +37,7 @@ const startRecordingErrors = () => {
     setTimeout(() => {
         console.error("test");
         console.warn("testWarn");
+        throw new Error();
     }, 2000);
 }
 
@@ -46,11 +47,13 @@ const stopRecordingErrors = () => {
         console.log("Console errors: " + consoleErrors);
         console.log("Console warnings: " + consoleWarnings);
         console.error = console.originalConsoleError;
+        console.warn = console.originalConsoleWarn;
         window.onerror = null;
     });
     setTimeout(() => {
         console.error("test");
         console.warn("testWarn");
+        throw new Error();
     }, 2000);
 }
 
