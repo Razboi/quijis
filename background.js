@@ -6,38 +6,81 @@ chrome.declarativeContent.onPageChanged.removeRules(undefined, () => {
 });
 
 chrome.runtime.onMessage.addListener((message) => {
-  if (message == "startRecordingNetworkEvents") {
-    startRecordingNetworkEvents();
-  } else if (message == "stopRecordingNetworkEvents") {
-    stopRecordingNetworkEvents();
+  if (message == "startRecordingEvents") {
+    startRecordingEvents();
+  } else if (message == "stopRecordingEvents") {
+    stopRecordingEvents();
   }
 });
 
-const startRecordingNetworkEvents = () => {
-  chrome.storage.sync.set({ failedNetworkRequests: [] });
-
+const startRecordingEvents = () => {
+  chrome.storage.sync.set({ unhandledErrors: [], consoleErrors: [], consoleWarnings: [], failedNetworkRequests: [] });
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    const currentTabId = tabs[0].id;
 
+    const currentTabId = tabs[0].id;
     chrome.debugger.attach({ tabId: currentTabId }, "1.0", () => {
+
       if (chrome.runtime.lastError) {
         alert(chrome.runtime.lastError.message);
         return;
       }
       chrome.debugger.sendCommand({ tabId: currentTabId }, "Network.enable");
-      chrome.debugger.onEvent.addListener((...params) => handleNetworkEvent(currentTabId, ...params));
+      chrome.debugger.sendCommand({ tabId: currentTabId }, "Runtime.enable");
+      chrome.debugger.onEvent.addListener(handleEvent);
     });
   })
 }
 
-const stopRecordingNetworkEvents = () => {
+const stopRecordingEvents = () => {
+  chrome.debugger.onEvent.removeListener(handleEvent);
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const currentTabId = tabs[0].id;
-    chrome.debugger.detach({ tabId: currentTabId });
+    chrome.debugger.sendCommand({ tabId: currentTabId }, "Runtime.discardConsoleEntries", {}, () => {
+      chrome.debugger.detach({ tabId: currentTabId });
+    });
   });
+  chrome.storage.sync.get(
+    ["unhandledErrors", "consoleErrors", "consoleWarnings", "failedNetworkRequests"],
+    function ({ unhandledErrors, consoleErrors, consoleWarnings, failedNetworkRequests }) {
+      console.log("Unhandled errors: " + unhandledErrors);
+      console.log("Console errors: " + consoleErrors);
+      console.log("Console warnings: " + consoleWarnings);
+      console.log("Failed network requests: " + failedNetworkRequests);
+      chrome.storage.sync.clear();
+    });
 }
 
-const handleNetworkEvent = (currentTabId, debuggeeId, message, params) => {
+const handleEvent = (debuggeeId, message, params) => {
+  const eventType = message.split(".")[0];
+  if (eventType === "Network") {
+    handleNetworkEvent(message, params);
+  }
+  if (eventType === "Runtime") {
+    handleRuntimeEvent(message, params);
+  }
+}
+
+const handleRuntimeEvent = (message, params) => {
+  if (message === "Runtime.consoleAPICalled") {
+    const errorTypeToStorageKeyMap = {
+      error: "consoleErrors",
+      warning: "consoleWarnings"
+    };
+    const storageKey = errorTypeToStorageKeyMap[params.type];
+    chrome.storage.sync.get(storageKey, function (data) {
+      data[storageKey].push(params.args[0].value);
+      chrome.storage.sync.set({ [storageKey]: data[storageKey] });
+    });
+  }
+  if (message === "Runtime.exceptionThrown") {
+    chrome.storage.sync.get("unhandledErrors", function ({ unhandledErrors }) {
+      unhandledErrors.push(params.exceptionDetails.exception.description);
+      chrome.storage.sync.set({ unhandledErrors: unhandledErrors });
+    });
+  }
+}
+
+const handleNetworkEvent = (message, params) => {
   if (params.type !== "XHR") {
     return;
   }
@@ -48,7 +91,7 @@ const handleNetworkEvent = (currentTabId, debuggeeId, message, params) => {
     handleNetworkRequestLoadingFailed(params);
   }
   if (message === "Network.responseReceived") {
-    handleNetworkResponseReceived(currentTabId, params);
+    handleNetworkResponseReceived(params);
   }
 }
 
@@ -71,12 +114,12 @@ const handleNetworkRequestLoadingFailed = (params) => {
     .catch((error) => console.error(error));
 }
 
-const handleNetworkResponseReceived = (currentTabId, params) => {
+const handleNetworkResponseReceived = (params) => {
   const httpErrorCodesRegex = /[45][0-9]{2}/;
   const responseCode = params.response ? params.response.status : null;
 
   if (httpErrorCodesRegex.test(responseCode)) {
-    Promise.all([getResponseBody(currentTabId, params.requestId), getRequestData(params.requestId)])
+    Promise.all([getResponseBody(params.requestId), getRequestData(params.requestId)])
       .then(responses => {
         const failedRequestData = {
           url: responses[1].url,
@@ -114,13 +157,16 @@ const saveFailedNetworkRequest = (failedRequestData) => {
   });
 }
 
-const getResponseBody = (tabId, requestId) => {
+const getResponseBody = (requestId) => {
   return new Promise(resolve => {
-    chrome.debugger.sendCommand({ tabId: tabId }, "Network.getResponseBody", { "requestId": requestId }, (response) => {
-      if (response) {
-        return resolve(response.base64Encoded ? response.body : JSON.parse(response.body));
-      }
-      resolve(null);
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const currentTabId = tabs[0].id;
+      chrome.debugger.sendCommand({ tabId: currentTabId }, "Network.getResponseBody", { "requestId": requestId }, (response) => {
+        if (response) {
+          return resolve(response.base64Encoded ? response.body : JSON.parse(response.body));
+        }
+        resolve(null);
+      });
     });
   });
 }

@@ -31,12 +31,10 @@ const sendMessageToBackground = (message) => {
 recordButton.onclick = () => {
     chrome.storage.sync.get(['isRecording'], function ({ isRecording }) {
         if (!isRecording) {
-            sendMessageToCurrentTab("startRecordingConsoleEvents");
-            sendMessageToBackground("startRecordingNetworkEvents");
+            sendMessageToBackground("startRecordingEvents");
             recordButton.textContent = "Detener grabación";
         } else {
-            sendMessageToCurrentTab("stopRecordingConsoleEvents");
-            sendMessageToBackground("stopRecordingNetworkEvents");
+            sendMessageToBackground("stopRecordingEvents");
             recordButton.textContent = "Grabar eventos";
         }
         chrome.storage.sync.set({ isRecording: !isRecording });
