@@ -20,7 +20,6 @@ const startRecordingNetworkEvents = () => {
     const currentTabId = tabs[0].id;
 
     chrome.debugger.attach({ tabId: currentTabId }, "1.0", () => {
-      // TODO: Handle error attaching debugger
       if (chrome.runtime.lastError) {
         alert(chrome.runtime.lastError.message);
         return;
@@ -42,62 +41,76 @@ const handleNetworkEvent = (currentTabId, debuggeeId, message, params) => {
   if (params.type !== "XHR") {
     return;
   }
+  if (message === "Network.requestWillBeSent") {
+    storeRequestData(params.requestId, params.request);
+  }
   if (message === "Network.loadingFailed" && params.corsErrorStatus) {
-    handleNetworkRequestLoadingFailed(currentTabId, params);
+    handleNetworkRequestLoadingFailed(params);
   }
   if (message === "Network.responseReceived") {
     handleNetworkResponseReceived(currentTabId, params);
   }
 }
 
-// TODO: Get url
-const handleNetworkRequestLoadingFailed = (currentTabId, params) => {
-  getRequestPostData(currentTabId, params.requestId)
-    .then(requestPostData => {
+const storeRequestData = (requestId, requestData) => {
+  chrome.storage.sync.set({ [requestId]: JSON.stringify(requestData) });
+}
+
+const handleNetworkRequestLoadingFailed = (params) => {
+  getRequestData(params.requestId)
+    .then(requestData => {
       const failedRequestData = {
-        url: "",
-        requestBody: requestPostData,
-        error: `CORS error: ${params.corsErrorStatus.corsError}`
+        url: requestData.url,
+        corsError: params.corsErrorStatus.corsError,
+        requestMethod: requestData.method,
+        requestHeaders: requestData.headers,
+        requestBody: requestData.hasPostData ? requestData.postData : null
       };
-      saveFailedNetworkRequests(failedRequestData);
+      saveFailedNetworkRequest(failedRequestData);
     })
     .catch((error) => console.error(error));
 }
 
-// TODO: Get requestHeaders
 const handleNetworkResponseReceived = (currentTabId, params) => {
   const httpErrorCodesRegex = /[45][0-9]{2}/;
   const responseCode = params.response ? params.response.status : null;
 
   if (httpErrorCodesRegex.test(responseCode)) {
-    Promise.all([getResponseBody(currentTabId, params.requestId), getRequestPostData(currentTabId, params.requestId)])
+    Promise.all([getResponseBody(currentTabId, params.requestId), getRequestData(params.requestId)])
       .then(responses => {
         const failedRequestData = {
-          url: params.response.url,
-          status: params.response.status,
-          requestBody: responses[1],
-          requestHeaders: "",
-          responseBody: responses[0],
+          url: responses[1].url,
+          status: responseCode,
+          requestMethod: responses[1].method,
+          requestHeaders: responses[1].headers,
+          requestBody: responses[1].hasPostData ? responses[1].postData : null,
           responseHeaders: params.response.headers,
+          responseBody: responses[0]
         };
-        saveFailedNetworkRequests(failedRequestData);
+        saveFailedNetworkRequest(failedRequestData);
       })
       .catch(error => console.error(error));
   }
 }
 
-const saveFailedNetworkRequests = (failedRequestData) => {
-  chrome.storage.sync.get(["failedNetworkRequests"], ({ failedNetworkRequests }) => {
-    failedNetworkRequests.push(JSON.stringify(failedRequestData));
-    chrome.storage.sync.set({ failedNetworkRequests: failedNetworkRequests });
+const getRequestData = (requestId) => {
+  return new Promise(resolve => {
+    chrome.storage.sync.get([requestId], (data) => {
+      resolve(data ? JSON.parse(data[requestId]) : null);
+      chrome.storage.sync.remove(requestId);
+    });
   });
 }
 
-const getRequestPostData = (tabId, requestId) => {
-  return new Promise(resolve => {
-    chrome.debugger.sendCommand({ tabId: tabId }, "Network.getRequestPostData", { "requestId": requestId }, (response) => {
-      resolve(response ? JSON.parse(response.postData) : null);
-    });
+const saveFailedNetworkRequest = (failedRequestData) => {
+  Object.entries(failedRequestData).forEach(([key, value]) => {
+    if (value === null || value === undefined) {
+      delete failedRequestData[key];
+    }
+  });
+  chrome.storage.sync.get(["failedNetworkRequests"], ({ failedNetworkRequests }) => {
+    failedNetworkRequests.push(JSON.stringify(failedRequestData));
+    chrome.storage.sync.set({ failedNetworkRequests: failedNetworkRequests });
   });
 }
 
