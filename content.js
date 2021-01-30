@@ -43,12 +43,12 @@ const startRecordingConsoleEvents = () => {
 
 const stopRecordingConsoleEvents = () => {
     chrome.storage.sync.get(
-        ["unhandledErrors", "consoleErrors", "consoleWarnings", "networkErrors"],
-        function ({ unhandledErrors, consoleErrors, consoleWarnings, networkErrors }) {
+        ["unhandledErrors", "consoleErrors", "consoleWarnings", "failedNetworkRequests"],
+        function ({ unhandledErrors, consoleErrors, consoleWarnings, failedNetworkRequests }) {
             console.log("Unhandled errors: " + unhandledErrors);
             console.log("Console errors: " + consoleErrors);
             console.log("Console warnings: " + consoleWarnings);
-            console.log("Network errors: " + networkErrors);
+            console.log("Failed network requests: " + failedNetworkRequests);
             console.error = console.originalConsoleError;
             console.warn = console.originalConsoleWarn;
             window.onerror = null;
