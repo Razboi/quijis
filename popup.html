@@ -1,17 +1,35 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
 <html>
-  <head>
-    <style>
-    </style>
-  </head>
-  <body>
-    <label>Título</label>
-    <input id="titleInput" />
-    <label>Descripción</label>
-    <textarea id="descriptionInput"></textarea>
-    <button id="createButton">Crear tarea</button>
-    <button id="recordButton">Grabar eventos</button>
-	<script src="popup.js"></script>
-  </body>
+
+<head>
+  <link rel="stylesheet" href="popup.css">
+</head>
+
+<body>
+  <div id="panel">
+    <div id="form">
+      <div class="form__input">
+        <label>Summary</label>
+        <input id="titleInput" />
+      </div>
+      <div class="form__input">
+        <label>Description</label>
+        <textarea rows="5" id="descriptionInput"></textarea>
+      </div>
+    </div>
+    <div id="buttons">
+      <button id="createButton">Create issue</button>
+      <button id="recordButton">Record events</button>
+    </div>
+    <div id="events">
+      <span class="events__count error">Unhandled errors: 0</span>
+      <span class="events__count error">Network errors: 0</span>
+      <span class="events__count error">Console errors: 0</span>
+      <span class="events__count error">Console warnings: 0</span>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+
 </html>

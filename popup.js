@@ -2,20 +2,33 @@ const TEST_API_KEY = "";
 const TEST_EMAIL = "";
 const TEST_PROJECT_KEY = "";
 const TEST_BASE_URL = "";
-let createButton = document.getElementById('createButton');
 let titleInput = document.getElementById('titleInput');
 let descriptionInput = document.getElementById('descriptionInput');
+let createButton = document.getElementById('createButton');
 let recordButton = document.getElementById('recordButton');
+let eventsDiv = document.getElementById('events');
 
 
 const initializeUI = () => {
-    chrome.storage.sync.get(['isRecording'], function ({ isRecording }) {
-        if (!isRecording) {
-            recordButton.textContent = "Grabar eventos";
+    chrome.storage.sync.get(["isRecording", "unhandledErrors", "failedNetworkRequests", "consoleErrors", "consoleWarnings"], function (data) {
+        if (!data.isRecording) {
+            recordButton.textContent = "Record events";
         } else {
-            recordButton.textContent = "Detener grabación";
+            recordButton.textContent = "Stop recording";
+        }
+        if (data.unhandledErrors || data.failedNetworkRequests || data.consoleErrors || data.consoleWarnings) {
+            displayRecordedEvents(data);
         }
     });
+}
+
+const displayRecordedEvents = (data) => {
+    eventsDiv.innerHTML = `
+        <span class="${data.unhandledErrors.length ? "events__count error" : "events__count"}">Unhandled errors: ${data.unhandledErrors.length}</span>
+        <span class="${data.failedNetworkRequests.length ? "events__count error" : "events__count"}">Network errors: ${data.failedNetworkRequests.length}</span>
+        <span class="${data.consoleErrors.length ? "events__count error" : "events__count"}">Console errors: ${data.consoleErrors.length}</span>
+        <span class="${data.consoleWarnings.length ? "events__count error" : "events__count"}">Console warnings: ${data.consoleWarnings.length}</span>
+    `;
 }
 
 const sendMessageToCurrentTab = (message) => {
@@ -32,10 +45,10 @@ recordButton.onclick = () => {
     chrome.storage.sync.get(['isRecording'], function ({ isRecording }) {
         if (!isRecording) {
             sendMessageToBackground("startRecordingEvents");
-            recordButton.textContent = "Detener grabación";
+            recordButton.textContent = "Stop recording";
         } else {
             sendMessageToBackground("stopRecordingEvents");
-            recordButton.textContent = "Grabar eventos";
+            recordButton.textContent = "Record events";
         }
         chrome.storage.sync.set({ isRecording: !isRecording });
     });

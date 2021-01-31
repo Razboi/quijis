@@ -1,0 +1,38 @@
+#panel {
+    width: 250px;
+    padding: 5px;
+    display: flex;
+    flex-direction: column;
+}
+
+#form {
+    display: flex;
+    flex-direction: column;
+}
+
+.form__input {
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+}
+
+#buttons {
+    display: flex;
+    margin-top: 10px;
+    justify-content: space-evenly;
+}
+
+#events {
+    display: flex;
+    flex-direction: column;
+    margin-top: 20px;
+    text-align: end;
+}
+
+.events__count {
+    margin-top: 5px;
+}
+
+.error {
+    color: red;
+}
