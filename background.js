@@ -39,15 +39,6 @@ const stopRecordingEvents = () => {
       chrome.debugger.detach({ tabId: currentTabId });
     });
   });
-  chrome.storage.sync.get(
-    ["unhandledErrors", "consoleErrors", "consoleWarnings", "failedNetworkRequests"],
-    function ({ unhandledErrors, consoleErrors, consoleWarnings, failedNetworkRequests }) {
-      console.log("Unhandled errors: " + unhandledErrors);
-      console.log("Console errors: " + consoleErrors);
-      console.log("Console warnings: " + consoleWarnings);
-      console.log("Failed network requests: " + failedNetworkRequests);
-      chrome.storage.sync.clear();
-    });
 }
 
 const handleEvent = (debuggeeId, message, params) => {
@@ -61,14 +52,14 @@ const handleEvent = (debuggeeId, message, params) => {
 }
 
 const handleRuntimeEvent = (message, params) => {
-  if (message === "Runtime.consoleAPICalled") {
+  if (message === "Runtime.consoleAPICalled" && (params.type === "error" || params.type === "warning")) {
     const errorTypeToStorageKeyMap = {
       error: "consoleErrors",
       warning: "consoleWarnings"
     };
     const storageKey = errorTypeToStorageKeyMap[params.type];
     chrome.storage.sync.get(storageKey, function (data) {
-      data[storageKey].push(params.args[0].value);
+      data[storageKey].push(params.args[0].description || params.args[0].value);
       chrome.storage.sync.set({ [storageKey]: data[storageKey] });
     });
   }
