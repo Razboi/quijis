@@ -1,3 +1,5 @@
+const TEST_BASE_URL = "";
+
 chrome.declarativeContent.onPageChanged.removeRules(undefined, () => {
   chrome.declarativeContent.onPageChanged.addRules([{
     conditions: [new chrome.declarativeContent.PageStateMatcher()],
@@ -12,6 +14,17 @@ chrome.runtime.onMessage.addListener((message) => {
     stopRecordingEvents();
   }
 });
+
+const listAndStoreProjects = () => {
+  var xmlhttp = new XMLHttpRequest();
+  xmlhttp.open("GET", `${TEST_BASE_URL}/rest/api/2/project`, true);
+  xmlhttp.onreadystatechange = function () {
+    if (xmlhttp.readyState == 4) {
+      chrome.storage.sync.set({ projects: xmlhttp.responseText });
+    }
+  };
+  xmlhttp.send();
+}
 
 const startRecordingEvents = () => {
   chrome.storage.sync.set({ unhandledErrors: [], consoleErrors: [], consoleWarnings: [], failedNetworkRequests: [] });
@@ -161,3 +174,5 @@ const getResponseBody = (requestId) => {
     });
   });
 }
+
+listAndStoreProjects();

@@ -2,6 +2,8 @@ const TEST_API_KEY = "";
 const TEST_EMAIL = "";
 const TEST_PROJECT_KEY = "";
 const TEST_BASE_URL = "";
+let projectsSelector = document.getElementById('projectsSelector');
+let typeSelector = document.getElementById('typeSelector');
 let titleInput = document.getElementById('titleInput');
 let descriptionInput = document.getElementById('descriptionInput');
 let createButton = document.getElementById('createButton');
@@ -10,16 +12,24 @@ let eventsDiv = document.getElementById('events');
 
 
 const initializeUI = () => {
-    chrome.storage.sync.get(["isRecording", "unhandledErrors", "failedNetworkRequests", "consoleErrors", "consoleWarnings"], function (data) {
-        if (!data.isRecording) {
-            recordButton.textContent = "Record events";
-        } else {
-            recordButton.textContent = "Stop recording";
+    chrome.storage.sync.get(["isRecording", "unhandledErrors", "failedNetworkRequests", "consoleErrors", "consoleWarnings", "projects"],
+        function (data) {
+            if (!data.isRecording) {
+                recordButton.textContent = "Record events";
+            } else {
+                recordButton.textContent = "Stop recording";
+            }
+            if (data.unhandledErrors || data.failedNetworkRequests || data.consoleErrors || data.consoleWarnings) {
+                displayRecordedEvents(data);
+            }
+            if (data.projects && data.projects.length) {
+                const projects = JSON.parse(data.projects);
+                let projectsOptions = "";
+                projects.forEach(project => projectsOptions += `<option value="${project.key}">${project.name}</option>`);
+                projectsSelector.innerHTML = projectsOptions;
+            }
         }
-        if (data.unhandledErrors || data.failedNetworkRequests || data.consoleErrors || data.consoleWarnings) {
-            displayRecordedEvents(data);
-        }
-    });
+    );
 }
 
 const displayRecordedEvents = (data) => {
@@ -98,12 +108,12 @@ createButton.onclick = () => {
             const body = {
                 fields: {
                     project: {
-                        key: TEST_PROJECT_KEY
+                        key: projectsSelector.value
                     },
                     summary: titleInput.value,
                     description: description,
                     issuetype: {
-                        name: "Bug"
+                        name: typeSelector.value
                     }
                 }
             };
@@ -111,7 +121,7 @@ createButton.onclick = () => {
             xmlhttp.open("POST", `${TEST_BASE_URL}/rest/api/2/issue`);
             xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
             xmlhttp.send(JSON.stringify(body));
-            chrome.storage.sync.clear();
+            chrome.storage.sync.remove(["unhandledErrors", "failedNetworkRequests", "consoleErrors", "consoleWarnings"]);
             descriptionInput.value = "";
             titleInput.value = "";
         });

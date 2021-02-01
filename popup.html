@@ -10,7 +10,21 @@
   <div id="panel">
     <div id="form">
       <div class="form__input">
-        <label>Summary</label>
+        <label>Project*</label>
+        <select id="projectsSelector">
+        </select>
+      </div>
+      <div class="form__input">
+        <label>Issue type*</label>
+        <select id="typeSelector">
+          <option value="Bug">Bug</option>
+          <option value="Task">Task</option>
+          <option value="Story">Story</option>
+          <option value="Epic">Epic</option>
+        </select>
+      </div>
+      <div class="form__input">
+        <label>Summary*</label>
         <input id="titleInput" />
       </div>
       <div class="form__input">
@@ -23,10 +37,10 @@
       <button id="recordButton">Record events</button>
     </div>
     <div id="events">
-      <span class="events__count error">Unhandled errors: 0</span>
-      <span class="events__count error">Network errors: 0</span>
-      <span class="events__count error">Console errors: 0</span>
-      <span class="events__count error">Console warnings: 0</span>
+      <span class="events__count">Unhandled errors: 0</span>
+      <span class="events__count">Network errors: 0</span>
+      <span class="events__count">Console errors: 0</span>
+      <span class="events__count">Console warnings: 0</span>
     </div>
   </div>
   <script src="popup.js"></script>
