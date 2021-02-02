@@ -1,0 +1,7 @@
+#backIcon {
+    margin-bottom: 10px;
+}
+
+#backIcon:hover {
+    cursor: pointer;
+}

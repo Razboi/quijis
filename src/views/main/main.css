@@ -1,0 +1,23 @@
+#events {
+    display: flex;
+    flex-direction: column;
+    margin-top: 20px;
+    text-align: end;
+}
+
+#settingsIcon {
+    display: flex;
+    justify-content: flex-end;
+}
+
+#settingsIcon:hover {
+    cursor: pointer;
+}
+
+.events__count {
+    margin-top: 5px;
+}
+
+.error {
+    color: red;
+}
