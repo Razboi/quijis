@@ -16,7 +16,7 @@ chrome.runtime.onMessage.addListener((message) => {
 const listAndStoreProjects = () => {
   chrome.storage.sync.get("url", function ({ url }) {
     var xmlhttp = new XMLHttpRequest();
-    xmlhttp.open("GET", `${url}rest/api/2/project`, true);
+    xmlhttp.open("GET", `${url}/rest/api/2/project`, true);
     xmlhttp.onreadystatechange = function () {
       if (xmlhttp.readyState == 4) {
         chrome.storage.sync.set({ projects: xmlhttp.responseText });

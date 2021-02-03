@@ -1,6 +1,9 @@
-let backIcon = document.getElementById('backIcon');
-let saveButton = document.getElementById('saveButton');
-let urlInput = document.getElementById('urlInput');
+import isJiraUrlValid from "../../lib/isJiraUrlValid.js";
+
+let backIcon = document.getElementById("backIcon");
+let saveButton = document.getElementById("saveButton");
+let urlInput = document.getElementById("urlInput");
+let formAlert = document.getElementById("formAlert");
 
 const initializeUI = () => {
     chrome.storage.sync.get("url", function ({ url }) {
@@ -13,7 +16,14 @@ backIcon.onclick = () => {
 };
 
 saveButton.onclick = () => {
-    chrome.storage.sync.set({ url: urlInput.value });
+    isJiraUrlValid(urlInput.value).then(isValid => {
+        if (isValid) {
+            formAlert.innerHTML = "";
+            chrome.storage.sync.set({ url: urlInput.value });
+        } else {
+            formAlert.innerHTML = "Invalid URL";
+        }
+    });
 };
 
 initializeUI();

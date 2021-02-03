@@ -9,8 +9,12 @@ let eventsDiv = document.getElementById('events');
 
 
 const initializeUI = () => {
-    chrome.storage.sync.get(["isRecording", "unhandledErrors", "failedNetworkRequests", "consoleErrors", "consoleWarnings", "projects"],
+    chrome.storage.sync.get(["isRecording", "unhandledErrors", "failedNetworkRequests", "consoleErrors", "consoleWarnings", "projects", "url"],
         function (data) {
+            if (!data.url) {
+                window.location.href = "../welcome/welcome.html";
+                return;
+            }
             if (!data.isRecording) {
                 recordButton.textContent = "Record events";
             } else {
@@ -102,7 +106,7 @@ createButton.onclick = () => {
                 }
             };
             var xmlhttp = new XMLHttpRequest();
-            xmlhttp.open("POST", `${url}rest/api/2/issue`);
+            xmlhttp.open("POST", `${url}/rest/api/2/issue`);
             xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
             xmlhttp.send(JSON.stringify(body));
             chrome.storage.sync.remove(["unhandledErrors", "failedNetworkRequests", "consoleErrors", "consoleWarnings"]);
