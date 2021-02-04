@@ -5,10 +5,10 @@ let urlInput = document.getElementById("urlInput");
 let formAlert = document.getElementById("formAlert");
 
 continueButton.onclick = () => {
-    isJiraUrlValid(urlInput.value).then(({ isValid, response }) => {
+    isJiraUrlValid(urlInput.value).then(({ isValid, projects }) => {
         if (isValid) {
             formAlert.innerHTML = "";
-            chrome.storage.sync.set({ url: urlInput.value, projects: response }, function () {
+            chrome.storage.sync.set({ url: urlInput.value, projects: projects }, function () {
                 window.location.href = "../main/main.html";
             });
         } else {

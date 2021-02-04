@@ -16,10 +16,10 @@ backIcon.onclick = () => {
 };
 
 saveButton.onclick = () => {
-    isJiraUrlValid(urlInput.value).then(isValid => {
+    isJiraUrlValid(urlInput.value).then(({ isValid, projects }) => {
         if (isValid) {
             formAlert.innerHTML = "";
-            chrome.storage.sync.set({ url: urlInput.value });
+            chrome.storage.sync.set({ url: urlInput.value, projects: projects });
         } else {
             formAlert.innerHTML = "Invalid URL";
         }

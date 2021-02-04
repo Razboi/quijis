@@ -6,7 +6,7 @@ let descriptionInput = document.getElementById('descriptionInput');
 let createButton = document.getElementById('createButton');
 let recordButton = document.getElementById('recordButton');
 let eventsDiv = document.getElementById('events');
-
+let clearEvents;
 
 const initializeUI = () => {
     chrome.storage.sync.get(["isRecording", "unhandledErrors", "failedNetworkRequests", "consoleErrors", "consoleWarnings", "projects", "url"],
@@ -34,12 +34,22 @@ const initializeUI = () => {
 }
 
 const displayRecordedEvents = (data) => {
+    const hasErrors = data.unhandledErrors.length || data.failedNetworkRequests.length || data.consoleErrors.length || data.consoleWarnings.length;
     eventsDiv.innerHTML = `
         <span class="${data.unhandledErrors.length ? "events__count error" : "events__count"}">Unhandled errors: ${data.unhandledErrors.length}</span>
         <span class="${data.failedNetworkRequests.length ? "events__count error" : "events__count"}">Network errors: ${data.failedNetworkRequests.length}</span>
         <span class="${data.consoleErrors.length ? "events__count error" : "events__count"}">Console errors: ${data.consoleErrors.length}</span>
         <span class="${data.consoleWarnings.length ? "events__count error" : "events__count"}">Console warnings: ${data.consoleWarnings.length}</span>
+        ${hasErrors ? '<u id="clearEventsOption" class="events__item">Clear all</u>' : ""}
     `;
+    if (hasErrors) {
+        document.getElementById('clearEventsOption').onclick = handleClearEvents;
+    }
+}
+
+const handleClearEvents = () => {
+    chrome.storage.sync.set({ unhandledErrors: [], consoleErrors: [], consoleWarnings: [], failedNetworkRequests: [] });
+    initializeUI();
 }
 
 const sendMessageToCurrentTab = (message) => {

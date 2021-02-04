@@ -14,8 +14,16 @@
     cursor: pointer;
 }
 
-.events__count {
+.events__item {
     margin-top: 5px;
+}
+
+#clearEventsOption {
+    margin-top: 10px;
+}
+
+#clearEventsOption:hover {
+    cursor: pointer;
 }
 
 .error {

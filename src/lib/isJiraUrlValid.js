@@ -5,11 +5,11 @@ const isJiraUrlValid = (url) => {
     const jiraUrlRegex = /^(https|http):\/\/\w*\.atlassian\.net$/;
     return new Promise(resolve => {
         if (!jiraUrlRegex.test(sanitizedUrl)) {
-            return resolve({ isValid: false, response: null });
+            return resolve({ isValid: false, projects: null });
         }
         projectsService.listProjects(sanitizedUrl)
-            .then(response => resolve({ isValid: true, response: response }))
-            .catch(() => resolve({ isValid: false, response: null }))
+            .then(response => resolve({ isValid: true, projects: response }))
+            .catch(() => resolve({ isValid: false, projects: null }))
     });
 }
 
