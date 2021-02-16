@@ -37,6 +37,7 @@ const startRecordingEvents = () => {
         alert(chrome.runtime.lastError.message);
         return;
       }
+      startRecordingScreen();
       chrome.debugger.sendCommand({ tabId: currentTabId }, "Network.enable");
       chrome.debugger.sendCommand({ tabId: currentTabId }, "Runtime.enable");
       chrome.debugger.onEvent.addListener(handleEvent);
@@ -45,6 +46,7 @@ const startRecordingEvents = () => {
 }
 
 const stopRecordingEvents = () => {
+  stopRecordingScreen();
   chrome.debugger.onEvent.removeListener(handleEvent);
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const currentTabId = tabs[0].id;
@@ -52,6 +54,43 @@ const stopRecordingEvents = () => {
       chrome.debugger.detach({ tabId: currentTabId });
     });
   });
+}
+
+const startRecordingScreen = () => {
+  chrome.desktopCapture.chooseDesktopMedia(["screen", "window", "tab"], function (streamId) {
+    navigator.mediaDevices.getUserMedia({
+      video: {
+        mandatory: {
+          chromeMediaSource: 'desktop',
+          chromeMediaSourceId: streamId
+        }
+      }
+    }).then(stream => {
+      navigator.stream = stream;
+      navigator.streamChunks = [];
+      const mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+      mediaRecorder.ondataavailable = handleStreamDataAvailable;
+      mediaRecorder.start(500);
+    })
+      .catch(error => console.error(error));
+  });
+}
+
+const stopRecordingScreen = () => {
+  const recordingBlob = new Blob(navigator.streamChunks);
+  const recordingUrl = URL.createObjectURL(recordingBlob, { type: 'video/webm' });
+  chrome.storage.sync.set({ recordingUrl: recordingUrl });
+  if (navigator.stream) {
+    navigator.stream.getTracks().forEach(track => track.stop());
+    delete navigator.stream;
+  }
+  delete navigator.streamChunks;
+}
+
+const handleStreamDataAvailable = (event) => {
+  if (navigator.streamChunks) {
+    navigator.streamChunks.push(event.data);
+  }
 }
 
 const handleEvent = (debuggeeId, message, params) => {

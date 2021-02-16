@@ -52,12 +52,6 @@ const handleClearEvents = () => {
     initializeUI();
 }
 
-const sendMessageToCurrentTab = (message) => {
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-        chrome.tabs.sendMessage(tabs[0].id, message);
-    });
-}
-
 const sendMessageToBackground = (message) => {
     chrome.runtime.sendMessage(message);
 }
@@ -83,8 +77,8 @@ const formatNetworkErrorLog = (failedNetworkRequest) => {
 }
 
 createButton.onclick = () => {
-    chrome.storage.sync.get(["unhandledErrors", "failedNetworkRequests", "consoleErrors", "consoleWarnings", "url"],
-        function ({ unhandledErrors, failedNetworkRequests, consoleErrors, consoleWarnings, url }) {
+    chrome.storage.sync.get(["unhandledErrors", "failedNetworkRequests", "consoleErrors", "consoleWarnings", "url", "recordingUrl"],
+        async function ({ unhandledErrors, failedNetworkRequests, consoleErrors, consoleWarnings, url, recordingUrl }) {
             let description = descriptionInput.value;
             if (unhandledErrors && unhandledErrors.length) {
                 description += `\n\n*Unhandled errors* (flag)${unhandledErrors.map(unhandledError =>
@@ -115,7 +109,8 @@ createButton.onclick = () => {
                     }
                 }
             };
-            var xmlhttp = new XMLHttpRequest();
+            const blob = await fetch(recordingUrl).then(r => r.blob());
+            const xmlhttp = new XMLHttpRequest();
             xmlhttp.open("POST", `${url}/rest/api/2/issue`);
             xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
             xmlhttp.send(JSON.stringify(body));
@@ -130,7 +125,7 @@ settingsIcon.onclick = () => {
 }
 
 recordButton.onclick = () => {
-    chrome.storage.sync.get(['isRecording'], function ({ isRecording }) {
+    chrome.storage.sync.get(["isRecording"], function ({ isRecording }) {
         if (!isRecording) {
             sendMessageToBackground("startRecordingEvents");
             recordButton.textContent = "Stop recording";
