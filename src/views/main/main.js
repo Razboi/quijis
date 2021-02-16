@@ -76,9 +76,20 @@ const formatNetworkErrorLog = (failedNetworkRequest) => {
     return networkErrorLog;
 }
 
+const attachRecordingToIssue = async (url, issueKey, recordingUrl) => {
+    const recordingBlob = await fetch(recordingUrl).then(r => r.blob());
+    const formData = new FormData();
+    formData.append("file", recordingBlob);
+
+    const xmlhttp = new XMLHttpRequest();
+    xmlhttp.open("POST", `${url}/rest/api/2/issue/${issueKey}/attachments`);
+    xmlhttp.setRequestHeader("X-Atlassian-Token", "no-check");
+    xmlhttp.send(formData);
+}
+
 createButton.onclick = () => {
     chrome.storage.sync.get(["unhandledErrors", "failedNetworkRequests", "consoleErrors", "consoleWarnings", "url", "recordingUrl"],
-        async function ({ unhandledErrors, failedNetworkRequests, consoleErrors, consoleWarnings, url, recordingUrl }) {
+        function ({ unhandledErrors, failedNetworkRequests, consoleErrors, consoleWarnings, url, recordingUrl }) {
             let description = descriptionInput.value;
             if (unhandledErrors && unhandledErrors.length) {
                 description += `\n\n*Unhandled errors* (flag)${unhandledErrors.map(unhandledError =>
@@ -109,12 +120,17 @@ createButton.onclick = () => {
                     }
                 }
             };
-            const blob = await fetch(recordingUrl).then(r => r.blob());
             const xmlhttp = new XMLHttpRequest();
             xmlhttp.open("POST", `${url}/rest/api/2/issue`);
             xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+            xmlhttp.onreadystatechange = function () {
+                if (recordingUrl && xmlhttp.readyState == 4) {
+                    const response = JSON.parse(xmlhttp.responseText);
+                    attachRecordingToIssue(url, response.key, recordingUrl);
+                }
+            };
             xmlhttp.send(JSON.stringify(body));
-            chrome.storage.sync.remove(["unhandledErrors", "failedNetworkRequests", "consoleErrors", "consoleWarnings"]);
+            chrome.storage.sync.remove(["unhandledErrors", "failedNetworkRequests", "consoleErrors", "consoleWarnings", "recordingUrl"]);
             descriptionInput.value = "";
             titleInput.value = "";
         });
