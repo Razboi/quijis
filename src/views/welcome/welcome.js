@@ -8,7 +8,15 @@ continueButton.onclick = () => {
     isJiraUrlValid(urlInput.value).then(({ isValid, projects }) => {
         if (isValid) {
             formAlert.innerHTML = "";
-            chrome.storage.sync.set({ url: urlInput.value, projects: projects }, function () {
+            chrome.storage.sync.set({
+                url: urlInput.value,
+                projects: projects,
+                recordVideo: true,
+                recordUnhandledErrors: true,
+                recordNetworkErrors: true,
+                recordConsoleErrors: true,
+                recordConsoleWarnings: true
+            }, function () {
                 window.location.href = "../main/main.html";
             });
         } else {

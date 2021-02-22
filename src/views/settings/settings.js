@@ -3,12 +3,24 @@ import isJiraUrlValid from "../../lib/isJiraUrlValid.js";
 let backIcon = document.getElementById("backIcon");
 let saveButton = document.getElementById("saveButton");
 let urlInput = document.getElementById("urlInput");
-let formAlert = document.getElementById("formAlert");
+let videoCheck = document.getElementById("videoCheck");
+let unhandledErrorsCheck = document.getElementById("unhandledErrorsCheck");
+let networkErrorsCheck = document.getElementById("networkErrorsCheck");
+let consoleErrorsCheck = document.getElementById("consoleErrorsCheck");
+let consoleWarningsCheck = document.getElementById("consoleWarningsCheck");
 
 const initializeUI = () => {
-    chrome.storage.sync.get("url", function ({ url }) {
-        urlInput.value = url;
-    });
+    chrome.storage.sync.get(
+        ["url", "recordVideo", "recordUnhandledErrors", "recordNetworkErrors", "recordConsoleErrors", "recordConsoleWarnings"],
+        function ({ url, recordVideo, recordUnhandledErrors, recordNetworkErrors, recordConsoleErrors, recordConsoleWarnings }
+        ) {
+            urlInput.value = url;
+            videoCheck.checked = recordVideo;
+            unhandledErrorsCheck.checked = recordUnhandledErrors;
+            networkErrorsCheck.checked = recordNetworkErrors;
+            consoleErrorsCheck.checked = recordConsoleErrors;
+            consoleWarningsCheck.checked = recordConsoleWarnings;
+        });
 }
 
 backIcon.onclick = () => {
@@ -19,7 +31,15 @@ saveButton.onclick = () => {
     isJiraUrlValid(urlInput.value).then(({ isValid, projects }) => {
         if (isValid) {
             formAlert.innerHTML = "";
-            chrome.storage.sync.set({ url: urlInput.value, projects: projects });
+            chrome.storage.sync.set({
+                url: urlInput.value,
+                projects: projects,
+                recordVideo: videoCheck.checked,
+                recordUnhandledErrors: unhandledErrorsCheck.checked,
+                recordNetworkErrors: networkErrorsCheck.checked,
+                recordConsoleErrors: consoleErrorsCheck.checked,
+                recordConsoleWarnings: consoleWarningsCheck.checked
+            });
         } else {
             formAlert.innerHTML = "Invalid URL";
         }

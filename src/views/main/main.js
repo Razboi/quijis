@@ -9,7 +9,10 @@ let eventsDiv = document.getElementById('events');
 let clearEvents;
 
 const initializeUI = () => {
-    chrome.storage.sync.get(["isRecording", "unhandledErrors", "failedNetworkRequests", "consoleErrors", "consoleWarnings", "projects", "url"],
+    chrome.storage.sync.get([
+        "isRecording", "unhandledErrors", "failedNetworkRequests", "consoleErrors", "consoleWarnings",
+        "projects", "url", "recordUnhandledErrors", "recordNetworkErrors", "recordConsoleErrors", "recordConsoleWarnings"
+    ],
         function (data) {
             if (!data.url) {
                 window.location.href = "../welcome/welcome.html";
@@ -20,9 +23,7 @@ const initializeUI = () => {
             } else {
                 recordButton.textContent = "Stop recording";
             }
-            if (data.unhandledErrors || data.failedNetworkRequests || data.consoleErrors || data.consoleWarnings) {
-                displayRecordedEvents(data);
-            }
+            displayRecordedEvents(data);
             if (data.projects && data.projects.length) {
                 const projects = JSON.parse(data.projects);
                 let projectsOptions = "";
@@ -35,15 +36,25 @@ const initializeUI = () => {
 
 const displayRecordedEvents = (data) => {
     const hasErrors = data.unhandledErrors.length || data.failedNetworkRequests.length || data.consoleErrors.length || data.consoleWarnings.length;
-    eventsDiv.innerHTML = `
-        <span class="${data.unhandledErrors.length ? "events__count error" : "events__count"}">Unhandled errors: ${data.unhandledErrors.length}</span>
-        <span class="${data.failedNetworkRequests.length ? "events__count error" : "events__count"}">Network errors: ${data.failedNetworkRequests.length}</span>
-        <span class="${data.consoleErrors.length ? "events__count error" : "events__count"}">Console errors: ${data.consoleErrors.length}</span>
-        <span class="${data.consoleWarnings.length ? "events__count error" : "events__count"}">Console warnings: ${data.consoleWarnings.length}</span>
-        ${hasErrors ? '<u id="clearEventsOption" class="events__item">Clear all</u>' : ""}
-    `;
+    let eventsHtml = '';
+    if (data.recordUnhandledErrors) {
+        eventsHtml += `<span class="${data.unhandledErrors.length ? "events__count error" : "events__count"}">Unhandled errors: ${data.unhandledErrors.length}</span>`;
+    }
+    if (data.recordNetworkErrors) {
+        eventsHtml += `<span class="${data.failedNetworkRequests.length ? "events__count error" : "events__count"}">Network errors: ${data.failedNetworkRequests.length}</span>`;
+    }
+    if (data.recordConsoleErrors) {
+        eventsHtml += `<span class="${data.consoleErrors.length ? "events__count error" : "events__count"}">Console errors: ${data.consoleErrors.length}</span>`;
+    }
+    if (data.recordConsoleWarnings) {
+        eventsHtml += `<span class="${data.consoleWarnings.length ? "events__count error" : "events__count"}">Console warnings: ${data.consoleWarnings.length}</span>`;
+    }
     if (hasErrors) {
+        eventsHtml += `<u id="clearEventsOption" class="events__item">Clear all</u>`;
+        eventsDiv.innerHTML = eventsHtml;
         document.getElementById('clearEventsOption').onclick = handleClearEvents;
+    } else {
+        eventsDiv.innerHTML = eventsHtml;
     }
 }
 

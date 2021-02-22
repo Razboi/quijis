@@ -37,10 +37,15 @@ const startRecordingEvents = () => {
         alert(chrome.runtime.lastError.message);
         return;
       }
-      startRecordingScreen();
-      chrome.debugger.sendCommand({ tabId: currentTabId }, "Network.enable");
-      chrome.debugger.sendCommand({ tabId: currentTabId }, "Runtime.enable");
-      chrome.debugger.onEvent.addListener(handleEvent);
+
+      chrome.storage.sync.get("recordVideo", function ({ recordVideo }) {
+        if (recordVideo) {
+          startRecordingScreen();
+        }
+        chrome.debugger.sendCommand({ tabId: currentTabId }, "Network.enable");
+        chrome.debugger.sendCommand({ tabId: currentTabId }, "Runtime.enable");
+        chrome.debugger.onEvent.addListener(handleEvent);
+      });
     });
   })
 }
@@ -105,37 +110,58 @@ const handleEvent = (debuggeeId, message, params) => {
 
 const handleRuntimeEvent = (message, params) => {
   if (message === "Runtime.consoleAPICalled" && (params.type === "error" || params.type === "warning")) {
-    const errorTypeToStorageKeyMap = {
-      error: "consoleErrors",
-      warning: "consoleWarnings"
-    };
-    const storageKey = errorTypeToStorageKeyMap[params.type];
-    chrome.storage.sync.get(storageKey, function (data) {
-      data[storageKey].push(params.args[0].description || params.args[0].value);
-      chrome.storage.sync.set({ [storageKey]: data[storageKey] });
-    });
+    const errorTypeToRecordingPermissionMap = getErrorTypeToRecordingPermissionMap();
+    const isEventRecordingPermitted = errorTypeToRecordingPermissionMap[params.type];
+    if (isEventRecordingPermitted) {
+      storeConsoleEvent(params);
+    }
   }
   if (message === "Runtime.exceptionThrown") {
-    chrome.storage.sync.get("unhandledErrors", function ({ unhandledErrors }) {
-      unhandledErrors.push(params.exceptionDetails.exception.description);
-      chrome.storage.sync.set({ unhandledErrors: unhandledErrors });
+    chrome.storage.sync.get(["unhandledErrors", "recordUnhandledErrors"], function ({ unhandledErrors, recordUnhandledErrors }) {
+      if (recordUnhandledErrors) {
+        unhandledErrors.push(params.exceptionDetails.exception.description);
+        chrome.storage.sync.set({ unhandledErrors: unhandledErrors });
+      }
     });
   }
 }
 
+const getErrorTypeToRecordingPermissionMap = () => {
+  let errorTypeToRecordingPermissionMap = {};
+  chrome.storage.sync.get(["recordConsoleErrors", "recordConsoleWarnings"], function ({ recordConsoleErrors, recordConsoleWarnings }) {
+    errorTypeToRecordingPermissionMap.error = recordConsoleErrors;
+    errorTypeToRecordingPermissionMap.warning = recordConsoleWarnings;
+  });
+  return errorTypeToRecordingPermissionMap;
+}
+
+const storeConsoleEvent = (eventParams) => {
+  const errorTypeToStorageKeyMap = {
+    error: "consoleErrors",
+    warning: "consoleWarnings"
+  };
+  const storageKey = errorTypeToStorageKeyMap[eventParams.type];
+  chrome.storage.sync.get(storageKey, function (data) {
+    data[storageKey].push(eventParams.args[0].description || eventParams.args[0].value);
+    chrome.storage.sync.set({ [storageKey]: data[storageKey] });
+  });
+}
+
 const handleNetworkEvent = (message, params) => {
-  if (params.type !== "XHR") {
-    return;
-  }
-  if (message === "Network.requestWillBeSent") {
-    storeRequestData(params.requestId, params.request);
-  }
-  if (message === "Network.loadingFailed" && params.corsErrorStatus) {
-    handleNetworkRequestLoadingFailed(params);
-  }
-  if (message === "Network.responseReceived") {
-    handleNetworkResponseReceived(params);
-  }
+  chrome.storage.sync.get(["recordNetworkErrors"], function ({ recordNetworkErrors }) {
+    if (!recordNetworkErrors || params.type !== "XHR") {
+      return;
+    }
+    if (message === "Network.requestWillBeSent") {
+      storeRequestData(params.requestId, params.request);
+    }
+    if (message === "Network.loadingFailed" && params.corsErrorStatus) {
+      handleNetworkRequestLoadingFailed(params);
+    }
+    if (message === "Network.responseReceived") {
+      handleNetworkResponseReceived(params);
+    }
+  });
 }
 
 const storeRequestData = (requestId, requestData) => {

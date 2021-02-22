@@ -16,6 +16,13 @@
     flex-direction: column;
 }
 
+.form__input--row {
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
 #buttons {
     display: flex;
     margin-top: 10px;
