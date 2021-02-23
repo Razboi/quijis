@@ -35,19 +35,19 @@ const initializeUI = () => {
 }
 
 const displayRecordedEvents = (data) => {
-    const hasErrors = data.unhandledErrors.length || data.failedNetworkRequests.length || data.consoleErrors.length || data.consoleWarnings.length;
+    const hasErrors = data.unhandledErrors?.length || data.failedNetworkRequests?.length || data.consoleErrors?.length || data.consoleWarnings?.length;
     let eventsHtml = '';
     if (data.recordUnhandledErrors) {
-        eventsHtml += `<span class="${data.unhandledErrors.length ? "events__count error" : "events__count"}">Unhandled errors: ${data.unhandledErrors.length}</span>`;
+        eventsHtml += `<span class="${data.unhandledErrors?.length ? "events__count error" : "events__count"}">Unhandled errors: ${data.unhandledErrors?.length || 0}</span>`;
     }
     if (data.recordNetworkErrors) {
-        eventsHtml += `<span class="${data.failedNetworkRequests.length ? "events__count error" : "events__count"}">Network errors: ${data.failedNetworkRequests.length}</span>`;
+        eventsHtml += `<span class="${data.failedNetworkRequests?.length ? "events__count error" : "events__count"}">Network errors: ${data.failedNetworkRequests?.length || 0}</span>`;
     }
     if (data.recordConsoleErrors) {
-        eventsHtml += `<span class="${data.consoleErrors.length ? "events__count error" : "events__count"}">Console errors: ${data.consoleErrors.length}</span>`;
+        eventsHtml += `<span class="${data.consoleErrors?.length ? "events__count error" : "events__count"}">Console errors: ${data.consoleErrors?.length || 0}</span>`;
     }
     if (data.recordConsoleWarnings) {
-        eventsHtml += `<span class="${data.consoleWarnings.length ? "events__count error" : "events__count"}">Console warnings: ${data.consoleWarnings.length}</span>`;
+        eventsHtml += `<span class="${data.consoleWarnings?.length ? "events__count error" : "events__count"}">Console warnings: ${data.consoleWarnings?.length || 0}</span>`;
     }
     if (hasErrors) {
         eventsHtml += `<u id="clearEventsOption" class="events__item">Clear all</u>`;

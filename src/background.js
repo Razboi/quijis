@@ -62,6 +62,7 @@ const stopRecordingEvents = () => {
 }
 
 const startRecordingScreen = () => {
+  chrome.storage.sync.remove("recordingUrl");
   chrome.desktopCapture.chooseDesktopMedia(["screen", "window", "tab"], function (streamId) {
     navigator.mediaDevices.getUserMedia({
       video: {
