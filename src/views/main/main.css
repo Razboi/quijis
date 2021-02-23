@@ -1,6 +1,11 @@
 #events {
     display: flex;
     flex-direction: column;
+    margin-top: 10px;
+    text-align: end;
+}
+
+#videoStatus {
     margin-top: 20px;
     text-align: end;
 }

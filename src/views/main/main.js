@@ -6,12 +6,14 @@ let descriptionInput = document.getElementById('descriptionInput');
 let createButton = document.getElementById('createButton');
 let recordButton = document.getElementById('recordButton');
 let eventsDiv = document.getElementById('events');
+let videoStatusDiv = document.getElementById('videoStatus');
 let clearEvents;
 
 const initializeUI = () => {
     chrome.storage.sync.get([
         "isRecording", "unhandledErrors", "failedNetworkRequests", "consoleErrors", "consoleWarnings",
-        "projects", "url", "recordUnhandledErrors", "recordNetworkErrors", "recordConsoleErrors", "recordConsoleWarnings"
+        "projects", "url", "recordUnhandledErrors", "recordNetworkErrors", "recordConsoleErrors",
+        "recordConsoleWarnings", "recordingUrl"
     ],
         function (data) {
             if (!data.url) {
@@ -24,6 +26,7 @@ const initializeUI = () => {
                 recordButton.textContent = "Stop recording";
             }
             displayRecordedEvents(data);
+            displayVideoStatus(data);
             if (data.projects && data.projects.length) {
                 const projects = JSON.parse(data.projects);
                 let projectsOptions = "";
@@ -49,7 +52,7 @@ const displayRecordedEvents = (data) => {
     if (data.recordConsoleWarnings) {
         eventsHtml += `<span class="${data.consoleWarnings?.length ? "events__count error" : "events__count"}">Console warnings: ${data.consoleWarnings?.length || 0}</span>`;
     }
-    if (hasErrors) {
+    if (hasErrors || data.recordingUrl) {
         eventsHtml += `<u id="clearEventsOption" class="events__item">Clear all</u>`;
         eventsDiv.innerHTML = eventsHtml;
         document.getElementById('clearEventsOption').onclick = handleClearEvents;
@@ -58,8 +61,22 @@ const displayRecordedEvents = (data) => {
     }
 }
 
+const displayVideoStatus = (data) => {
+    let text;
+    let icon;
+    if (data.isRecording) {
+        text = "Recording...";
+        icon = "fas fa-circle";
+    } else {
+        text = data.recordingUrl ? "Recording is ready" : "No video recorded";
+        icon = data.recordingUrl ? "fas fa-video" : "fas fa-video-slash";
+    }
+    videoStatusDiv.innerHTML = `<span><i id="videoStatusIcon" class="${icon}"></i> ${text}</span>`;
+}
+
 const handleClearEvents = () => {
     chrome.storage.sync.set({ unhandledErrors: [], consoleErrors: [], consoleWarnings: [], failedNetworkRequests: [] });
+    chrome.storage.sync.remove("recordingUrl");
     initializeUI();
 }
 
@@ -161,6 +178,8 @@ recordButton.onclick = () => {
             recordButton.textContent = "Record events";
         }
         chrome.storage.sync.set({ isRecording: !isRecording });
+        // Timeout is needed in order to wait for the background to generate the recording URL
+        setTimeout(() => initializeUI(), 100);
     });
 };
 

@@ -83,14 +83,16 @@ const startRecordingScreen = () => {
 }
 
 const stopRecordingScreen = () => {
-  const recordingBlob = new Blob(navigator.streamChunks);
-  const recordingUrl = URL.createObjectURL(recordingBlob, { type: 'video/webm' });
-  chrome.storage.sync.set({ recordingUrl: recordingUrl });
+  if (navigator.streamChunks) {
+    const recordingBlob = new Blob(navigator.streamChunks);
+    const recordingUrl = URL.createObjectURL(recordingBlob, { type: 'video/webm' });
+    chrome.storage.sync.set({ recordingUrl: recordingUrl });
+    delete navigator.streamChunks;
+  }
   if (navigator.stream) {
     navigator.stream.getTracks().forEach(track => track.stop());
     delete navigator.stream;
   }
-  delete navigator.streamChunks;
 }
 
 const handleStreamDataAvailable = (event) => {
