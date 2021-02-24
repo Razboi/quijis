@@ -1,0 +1,19 @@
+{
+  "name": "quijis",
+  "version": "0.1.0",
+  "description": "Chrome extension to create Jira tasks with errors log and video recording",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Razboi/quijis.git"
+  },
+  "author": "Marc Recatala",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Razboi/quijis/issues"
+  },
+  "homepage": "https://github.com/Razboi/quijis#readme"
+}
