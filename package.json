@@ -4,6 +4,7 @@
   "description": "Chrome extension to create Jira tasks with errors log and video recording",
   "main": "index.js",
   "scripts": {
+    "lint": "eslint src",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
