@@ -13,7 +13,7 @@ const handleStreamDataAvailable = (event) => {
 
 const startRecordingScreen = () => {
   chrome.storage.sync.remove('recordingUrl');
-  chrome.desktopCapture.chooseDesktopMedia(['screen', 'window', 'tab'], (streamId) => {
+  chrome.desktopCapture.chooseDesktopMedia(['screen'], (streamId) => {
     navigator.mediaDevices.getUserMedia({
       video: {
         mandatory: {
@@ -27,10 +27,7 @@ const startRecordingScreen = () => {
       const mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
       mediaRecorder.ondataavailable = handleStreamDataAvailable;
       mediaRecorder.start(500);
-    })
-      .catch(() => {
-        // TODO: Display error on UI
-      });
+    });
   });
 };
 
@@ -73,9 +70,8 @@ const storeRequestData = (requestId, requestData) => {
 };
 
 const getResponseBody = (requestId) => new Promise((resolve) => {
-  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    const currentTabId = tabs[0].id;
-    chrome.debugger.sendCommand({ tabId: currentTabId }, 'Network.getResponseBody', { requestId }, (response) => {
+  chrome.storage.sync.get('recordedTabId', ({ recordedTabId }) => {
+    chrome.debugger.sendCommand({ tabId: recordedTabId }, 'Network.getResponseBody', { requestId }, (response) => {
       if (response) {
         return resolve(response.base64Encoded ? response.body : JSON.parse(response.body));
       }
@@ -172,17 +168,13 @@ const handleEvent = (debuggeeId, message, params) => {
 };
 
 const startRecordingEvents = () => {
+  chrome.storage.sync.remove('recordedTabId');
   chrome.storage.sync.set({
     unhandledErrors: [], consoleErrors: [], consoleWarnings: [], failedNetworkRequests: [],
   });
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const currentTabId = tabs[0].id;
     chrome.debugger.attach({ tabId: currentTabId }, '1.0', () => {
-      if (chrome.runtime.lastError) {
-        // TODO: Display error on UI
-        return;
-      }
-
       chrome.storage.sync.get('recordVideo', ({ recordVideo }) => {
         if (recordVideo) {
           startRecordingScreen();
@@ -190,6 +182,7 @@ const startRecordingEvents = () => {
         chrome.debugger.sendCommand({ tabId: currentTabId }, 'Network.enable');
         chrome.debugger.sendCommand({ tabId: currentTabId }, 'Runtime.enable');
         chrome.debugger.onEvent.addListener(handleEvent);
+        chrome.storage.sync.set({ recordedTabId: currentTabId });
       });
     });
   });
@@ -211,10 +204,9 @@ const stopRecordingScreen = () => {
 const stopRecordingEvents = () => {
   stopRecordingScreen();
   chrome.debugger.onEvent.removeListener(handleEvent);
-  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    const currentTabId = tabs[0].id;
-    chrome.debugger.sendCommand({ tabId: currentTabId }, 'Runtime.discardConsoleEntries', {}, () => {
-      chrome.debugger.detach({ tabId: currentTabId });
+  chrome.storage.sync.get('recordedTabId', ({ recordedTabId }) => {
+    chrome.debugger.sendCommand({ tabId: recordedTabId }, 'Runtime.discardConsoleEntries', {}, () => {
+      chrome.debugger.detach({ tabId: recordedTabId });
     });
   });
 };

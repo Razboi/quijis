@@ -1,4 +1,4 @@
-import projectsService from '../services/projects';
+import projectsService from '../services/projects.js';
 
 const isJiraUrlValid = (url) => {
   const sanitizedUrl = url.replace(/\/$/, '');

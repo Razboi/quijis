@@ -11,6 +11,7 @@
         "sourceType": "module"
     },
     "rules": {
+        "import/extensions": ["error",  "always"]
     },
     "globals": {
         "chrome": true
