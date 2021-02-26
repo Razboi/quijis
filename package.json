@@ -1,6 +1,6 @@
 {
   "name": "quijis",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Chrome extension to create Jira tasks with errors log and video recording",
   "main": "index.js",
   "scripts": {
