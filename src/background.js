@@ -180,6 +180,7 @@ const startRecordingEvents = () => {
           startRecordingScreen();
         }
         chrome.debugger.sendCommand({ tabId: currentTabId }, 'Network.enable');
+        chrome.debugger.sendCommand({ tabId: currentTabId }, 'Runtime.discardConsoleEntries');
         chrome.debugger.sendCommand({ tabId: currentTabId }, 'Runtime.enable');
         chrome.debugger.onEvent.addListener(handleEvent);
         chrome.storage.sync.set({ recordedTabId: currentTabId });
@@ -205,9 +206,7 @@ const stopRecordingEvents = () => {
   stopRecordingScreen();
   chrome.debugger.onEvent.removeListener(handleEvent);
   chrome.storage.sync.get('recordedTabId', ({ recordedTabId }) => {
-    chrome.debugger.sendCommand({ tabId: recordedTabId }, 'Runtime.discardConsoleEntries', {}, () => {
-      chrome.debugger.detach({ tabId: recordedTabId });
-    });
+    chrome.debugger.detach({ tabId: recordedTabId });
   });
 };
 
