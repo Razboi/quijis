@@ -18,4 +18,4 @@ const listProjects = (baseUrl) => new Promise((resolve, reject) => {
   XHR.send();
 });
 
-export default { listProjects };
+module.exports = { listProjects };

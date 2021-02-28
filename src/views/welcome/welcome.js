@@ -1,4 +1,4 @@
-import isJiraUrlValid from '../../lib/isJiraUrlValid.js';
+const isJiraUrlValid = require('../../lib/isJiraUrlValid.js');
 
 const continueButton = document.getElementById('continueButton');
 const urlInput = document.getElementById('urlInput');

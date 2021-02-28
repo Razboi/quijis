@@ -1,4 +1,4 @@
-import projectsService from '../services/projects.js';
+const projectsService = require('../services/projects.js');
 
 const isJiraUrlValid = (url) => {
   const sanitizedUrl = url.replace(/\/$/, '');
@@ -13,4 +13,4 @@ const isJiraUrlValid = (url) => {
   });
 };
 
-export default isJiraUrlValid;
+module.exports = isJiraUrlValid;
