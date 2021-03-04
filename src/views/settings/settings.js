@@ -10,21 +10,15 @@ const networkErrorsCheck = document.getElementById('networkErrorsCheck');
 const consoleErrorsCheck = document.getElementById('consoleErrorsCheck');
 const consoleWarningsCheck = document.getElementById('consoleWarningsCheck');
 
-const initializeUI = () => {
-  chrome.storage.sync.get(
-    ['url', 'recordVideo', 'recordUnhandledErrors', 'recordNetworkErrors', 'recordConsoleErrors', 'recordConsoleWarnings'],
-    ({
-      url, recordVideo, recordUnhandledErrors, recordNetworkErrors,
-      recordConsoleErrors, recordConsoleWarnings,
-    }) => {
-      urlInput.value = url;
-      videoCheck.checked = recordVideo;
-      unhandledErrorsCheck.checked = recordUnhandledErrors;
-      networkErrorsCheck.checked = recordNetworkErrors;
-      consoleErrorsCheck.checked = recordConsoleErrors;
-      consoleWarningsCheck.checked = recordConsoleWarnings;
-    },
-  );
+const loadDataIntoUi = () => {
+  chrome.storage.sync.get(['url', 'permissions'], ({ url, permissions }) => {
+    urlInput.value = url;
+    videoCheck.checked = permissions.recordVideo;
+    unhandledErrorsCheck.checked = permissions.recordUnhandledErrors;
+    networkErrorsCheck.checked = permissions.recordNetworkErrors;
+    consoleErrorsCheck.checked = permissions.recordConsoleErrors;
+    consoleWarningsCheck.checked = permissions.recordConsoleWarnings;
+  });
 };
 
 backIcon.onclick = () => {
@@ -36,13 +30,15 @@ saveButton.onclick = () => {
     if (isValid) {
       formAlert.innerHTML = '';
       chrome.storage.sync.set({
-        url: urlInput.value,
+        jiraUrl: urlInput.value,
         projects,
-        recordVideo: videoCheck.checked,
-        recordUnhandledErrors: unhandledErrorsCheck.checked,
-        recordNetworkErrors: networkErrorsCheck.checked,
-        recordConsoleErrors: consoleErrorsCheck.checked,
-        recordConsoleWarnings: consoleWarningsCheck.checked,
+        permissions: {
+          recordVideo: videoCheck.checked,
+          recordUnhandledErrors: unhandledErrorsCheck.checked,
+          recordNetworkErrors: networkErrorsCheck.checked,
+          recordConsoleErrors: consoleErrorsCheck.checked,
+          recordConsoleWarnings: consoleWarningsCheck.checked,
+        },
       });
     } else {
       formAlert.innerHTML = 'Invalid URL';
@@ -50,4 +46,4 @@ saveButton.onclick = () => {
   });
 };
 
-initializeUI();
+loadDataIntoUi();
