@@ -1,4 +1,4 @@
-import isJiraUrlValid from '../../lib/isJiraUrlValid.js';
+const isJiraUrlValid = require('../../lib/isJiraUrlValid.js');
 
 const backIcon = document.getElementById('backIcon');
 const saveButton = document.getElementById('saveButton');
