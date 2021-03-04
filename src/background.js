@@ -167,8 +167,50 @@ const handleEvent = (debuggeeId, message, params) => {
   }
 };
 
+const stopRecordingScreen = () => {
+  if (navigator.streamChunks) {
+    const recordingBlob = new Blob(navigator.streamChunks);
+    const recordingUrl = URL.createObjectURL(recordingBlob, { type: 'video/webm' });
+    chrome.storage.sync.set({ recordingUrl });
+    delete navigator.streamChunks;
+  }
+  if (navigator.stream) {
+    navigator.stream.getTracks().forEach((track) => track.stop());
+    delete navigator.stream;
+  }
+};
+
+const stopRecordingEvents = (detachDebugger = true) => {
+  stopRecordingScreen();
+  chrome.debugger.onEvent.removeListener(handleEvent);
+  chrome.storage.sync.get('recordedTabId', ({ recordedTabId }) => {
+    if (detachDebugger) {
+      chrome.debugger.detach({ tabId: recordedTabId });
+    }
+    chrome.storage.sync.remove('recordedTabId');
+    // eslint-disable-next-line no-use-before-define
+    chrome.tabs.onRemoved.removeListener(handleTabClosed);
+  });
+};
+
+const handleTabClosed = (closedTabId) => {
+  chrome.storage.sync.get('recordedTabId', ({ recordedTabId }) => {
+    if (closedTabId === recordedTabId) {
+      // the debugger must not be detached when the recorded tab was closed
+      stopRecordingEvents(false);
+      chrome.storage.sync.remove('recordingUrl');
+      chrome.storage.sync.set({
+        unhandledErrors: [],
+        consoleErrors: [],
+        consoleWarnings: [],
+        failedNetworkRequests: [],
+        isRecording: false,
+      });
+    }
+  });
+};
+
 const startRecordingEvents = () => {
-  chrome.storage.sync.remove('recordedTabId');
   chrome.storage.sync.set({
     unhandledErrors: [], consoleErrors: [], consoleWarnings: [], failedNetworkRequests: [],
   });
@@ -184,29 +226,9 @@ const startRecordingEvents = () => {
         chrome.debugger.sendCommand({ tabId: currentTabId }, 'Runtime.enable');
         chrome.debugger.onEvent.addListener(handleEvent);
         chrome.storage.sync.set({ recordedTabId: currentTabId });
+        chrome.tabs.onRemoved.addListener(handleTabClosed);
       });
     });
-  });
-};
-
-const stopRecordingScreen = () => {
-  if (navigator.streamChunks) {
-    const recordingBlob = new Blob(navigator.streamChunks);
-    const recordingUrl = URL.createObjectURL(recordingBlob, { type: 'video/webm' });
-    chrome.storage.sync.set({ recordingUrl });
-    delete navigator.streamChunks;
-  }
-  if (navigator.stream) {
-    navigator.stream.getTracks().forEach((track) => track.stop());
-    delete navigator.stream;
-  }
-};
-
-const stopRecordingEvents = () => {
-  stopRecordingScreen();
-  chrome.debugger.onEvent.removeListener(handleEvent);
-  chrome.storage.sync.get('recordedTabId', ({ recordedTabId }) => {
-    chrome.debugger.detach({ tabId: recordedTabId });
   });
 };
 
