@@ -175,8 +175,8 @@ const startRecordingEvents = () => {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const currentTabId = tabs[0].id;
     chrome.debugger.attach({ tabId: currentTabId }, '1.0', () => {
-      chrome.storage.sync.get('recordVideo', ({ recordVideo }) => {
-        if (recordVideo) {
+      chrome.storage.sync.get('permissions', ({ permissions }) => {
+        if (permissions.recordVideo) {
           startRecordingScreen();
         }
         chrome.debugger.sendCommand({ tabId: currentTabId }, 'Network.enable');
@@ -219,9 +219,9 @@ chrome.runtime.onMessage.addListener((message) => {
 });
 
 const listAndStoreProjects = () => {
-  chrome.storage.sync.get('url', ({ url }) => {
+  chrome.storage.sync.get('jiraUrl', ({ jiraUrl }) => {
     const xmlhttp = new XMLHttpRequest();
-    xmlhttp.open('GET', `${url}/rest/api/2/project`, true);
+    xmlhttp.open('GET', `${jiraUrl}/rest/api/2/project`, true);
     xmlhttp.onreadystatechange = function handleStateChange() {
       if (xmlhttp.readyState === 4) {
         chrome.storage.sync.set({ projects: xmlhttp.responseText });

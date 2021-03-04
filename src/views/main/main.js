@@ -1,83 +1,18 @@
+import ui from './ui.js';
+import issuesService from '../../services/issues.js';
+
+const RECORD_BUTTON_ID = 'recordButton';
+const PROJECTS_SELECTOR_ID = 'projectsSelector';
+const EVENTS_DIV_ID = 'events';
+const VIDEO_STATUS_DIV_ID = 'videoStatus';
+
 const settingsIcon = document.getElementById('settingsIcon');
 const projectsSelector = document.getElementById('projectsSelector');
 const typeSelector = document.getElementById('typeSelector');
 const titleInput = document.getElementById('titleInput');
 const descriptionInput = document.getElementById('descriptionInput');
 const createButton = document.getElementById('createButton');
-const recordButton = document.getElementById('recordButton');
-const eventsDiv = document.getElementById('events');
-const videoStatusDiv = document.getElementById('videoStatus');
-
-const displayRecordedEvents = (data) => {
-  const hasErrors = data.unhandledErrors?.length || data.failedNetworkRequests?.length
-    || data.consoleErrors?.length || data.consoleWarnings?.length;
-  let eventsHtml = '';
-  if (data.recordUnhandledErrors) {
-    eventsHtml += `<span class="${data.unhandledErrors?.length ? 'events__count error' : 'events__count'}">Unhandled errors: ${data.unhandledErrors?.length || 0}</span>`;
-  }
-  if (data.recordNetworkErrors) {
-    eventsHtml += `<span class="${data.failedNetworkRequests?.length ? 'events__count error' : 'events__count'}">Network errors: ${data.failedNetworkRequests?.length || 0}</span>`;
-  }
-  if (data.recordConsoleErrors) {
-    eventsHtml += `<span class="${data.consoleErrors?.length ? 'events__count error' : 'events__count'}">Console errors: ${data.consoleErrors?.length || 0}</span>`;
-  }
-  if (data.recordConsoleWarnings) {
-    eventsHtml += `<span class="${data.consoleWarnings?.length ? 'events__count error' : 'events__count'}">Console warnings: ${data.consoleWarnings?.length || 0}</span>`;
-  }
-  if (hasErrors || data.recordingUrl) {
-    eventsHtml += '<u id="clearEventsOption" class="events__item">Clear all</u>';
-    eventsDiv.innerHTML = eventsHtml;
-    document.getElementById('clearEventsOption').onclick = () => {
-      const defaultEvents = {
-        unhandledErrors: [], consoleErrors: [], consoleWarnings: [], failedNetworkRequests: [],
-      };
-      chrome.storage.sync.set(defaultEvents);
-      chrome.storage.sync.remove('recordingUrl');
-      displayRecordedEvents(defaultEvents);
-    };
-  } else {
-    eventsDiv.innerHTML = eventsHtml;
-  }
-};
-
-const displayVideoStatus = (data) => {
-  let text;
-  let icon;
-  if (data.isRecording) {
-    text = 'Recording...';
-    icon = 'fas fa-circle';
-  } else {
-    text = data.recordingUrl ? 'Recording is ready' : 'No video recorded';
-    icon = data.recordingUrl ? 'fas fa-video' : 'fas fa-video-slash';
-  }
-  videoStatusDiv.innerHTML = `<span><i id="videoStatusIcon" class="${icon}"></i> ${text}</span>`;
-};
-
-const initializeUI = () => {
-  chrome.storage.sync.get([
-    'isRecording', 'unhandledErrors', 'failedNetworkRequests', 'consoleErrors', 'consoleWarnings',
-    'projects', 'url', 'recordUnhandledErrors', 'recordNetworkErrors', 'recordConsoleErrors',
-    'recordConsoleWarnings', 'recordingUrl',
-  ], (data) => {
-    if (!data.url) {
-      window.location.href = '../welcome/welcome.html';
-      return;
-    }
-    if (!data.isRecording) {
-      recordButton.textContent = 'Record events';
-    } else {
-      recordButton.textContent = 'Stop recording';
-    }
-    displayRecordedEvents(data);
-    displayVideoStatus(data);
-    if (data.projects && data.projects.length) {
-      const projects = JSON.parse(data.projects);
-      let projectsOptions = '';
-      projects.forEach((project) => { projectsOptions += `<option value="${project.key}">${project.name}</option>`; });
-      projectsSelector.innerHTML = projectsOptions;
-    }
-  });
-};
+const recordButton = document.getElementById(RECORD_BUTTON_ID);
 
 const sendMessageToBackground = (message) => {
   chrome.runtime.sendMessage(message);
@@ -103,20 +38,7 @@ const formatNetworkErrorLog = (failedNetworkRequest) => {
   return networkErrorLog;
 };
 
-const attachRecordingToIssue = async (url, issueKey, recordingUrl) => {
-  const recordingBlob = await fetch(recordingUrl).then((r) => r.blob());
-  const formData = new FormData();
-  formData.append('file', recordingBlob);
-
-  const xmlhttp = new XMLHttpRequest();
-  xmlhttp.open('POST', `${url}/rest/api/2/issue/${issueKey}/attachments`);
-  xmlhttp.setRequestHeader('X-Atlassian-Token', 'no-check');
-  xmlhttp.send(formData);
-};
-
-const handleCreation = ({
-  unhandledErrors, failedNetworkRequests, consoleErrors, consoleWarnings, url, recordingUrl,
-}) => {
+const getDescription = (unhandledErrors, failedNetworkRequests, consoleErrors, consoleWarnings) => {
   let description = descriptionInput.value;
   if (unhandledErrors && unhandledErrors.length) {
     description += `\n\n*Unhandled errors* (flag)${unhandledErrors.map((unhandledError) => `\n{quote}${unhandledError}{quote}`)}`;
@@ -131,6 +53,15 @@ const handleCreation = ({
     description += `\n\n*Console warnings* (!)${consoleWarnings.map((consoleWarning) => `\n{quote}${consoleWarning}{quote}`)}`;
   }
   description += '\n\n_Generated with [Quijis|https://github.com/Razboi/quijis]_';
+  return description;
+};
+
+const handleCreation = async ({
+  unhandledErrors, failedNetworkRequests, consoleErrors, consoleWarnings, jiraUrl, recordingUrl,
+}) => {
+  const description = getDescription(
+    unhandledErrors, failedNetworkRequests, consoleErrors, consoleWarnings,
+  );
   const body = {
     fields: {
       project: {
@@ -143,36 +74,38 @@ const handleCreation = ({
       },
     },
   };
-  const xmlhttp = new XMLHttpRequest();
-  xmlhttp.open('POST', `${url}/rest/api/2/issue`);
-  xmlhttp.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
-  xmlhttp.onreadystatechange = function handleStateChange() {
-    if (recordingUrl && xmlhttp.readyState === 4) {
-      const response = JSON.parse(xmlhttp.responseText);
-      attachRecordingToIssue(url, response.key, recordingUrl);
-    }
-  };
-  xmlhttp.send(JSON.stringify(body));
-  chrome.storage.sync.remove(['unhandledErrors', 'failedNetworkRequests', 'consoleErrors', 'consoleWarnings', 'recordingUrl']);
+  const response = await issuesService.createIssue(jiraUrl, body);
+  const parsedResponse = JSON.parse(response);
+  if (recordingUrl) {
+    const recordingBlob = await fetch(recordingUrl).then((r) => r.blob());
+    await issuesService.attachRecordingToIssue(jiraUrl, parsedResponse.key, recordingBlob);
+  }
   descriptionInput.value = '';
   titleInput.value = '';
+  chrome.storage.sync.remove(
+    ['unhandledErrors', 'failedNetworkRequests', 'consoleErrors', 'consoleWarnings', 'recordingUrl'],
+    () => ui.loadDataIntoUi(
+      RECORD_BUTTON_ID, PROJECTS_SELECTOR_ID, EVENTS_DIV_ID, VIDEO_STATUS_DIV_ID,
+    ),
+  );
 };
 
 const handleRecord = ({ isRecording }) => {
   if (!isRecording) {
     sendMessageToBackground('startRecordingEvents');
-    recordButton.textContent = 'Stop recording';
   } else {
     sendMessageToBackground('stopRecordingEvents');
-    recordButton.textContent = 'Record events';
   }
+  ui.loadRecordButtonText(RECORD_BUTTON_ID, !isRecording);
   chrome.storage.sync.set({ isRecording: !isRecording });
   // Timeout is needed in order to wait for the background to generate the recording URL
-  setTimeout(() => initializeUI(), 100);
+  setTimeout(() => ui.loadDataIntoUi(
+    RECORD_BUTTON_ID, PROJECTS_SELECTOR_ID, EVENTS_DIV_ID, VIDEO_STATUS_DIV_ID,
+  ), 100);
 };
 
 createButton.onclick = () => {
-  chrome.storage.sync.get(['unhandledErrors', 'failedNetworkRequests', 'consoleErrors', 'consoleWarnings', 'url', 'recordingUrl'], handleCreation);
+  chrome.storage.sync.get(['unhandledErrors', 'failedNetworkRequests', 'consoleErrors', 'consoleWarnings', 'jiraUrl', 'recordingUrl'], handleCreation);
 };
 
 settingsIcon.onclick = () => {
@@ -183,4 +116,4 @@ recordButton.onclick = () => {
   chrome.storage.sync.get(['isRecording'], handleRecord);
 };
 
-initializeUI();
+ui.loadDataIntoUi(RECORD_BUTTON_ID, PROJECTS_SELECTOR_ID, EVENTS_DIV_ID, VIDEO_STATUS_DIV_ID);
