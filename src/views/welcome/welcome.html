@@ -8,17 +8,15 @@
 </head>
 
 <body>
-    <div id="panel">
-        <div id="form">
-            <p class="text-center">Welcome to Quijis, please enter your company JIRA URL to continue</p>
-            <div id="formAlert" class="error"></div>
+    <div class="layout">
+        <div class="form">
+            <p class="form__header">Welcome to Quijis, please enter your company JIRA URL to continue</p>
+            <div class="form__alert error"></div>
             <div class="form__input">
-                <input id="urlInput" placeholder="https://your-domain.atlassian.net/" />
+                <input class="form__url-input" placeholder="https://your-domain.atlassian.net/" />
             </div>
         </div>
-        <div id="buttons">
-            <button id="continueButton">Continue</button>
-        </div>
+        <button class="form__button">Continue</button>
     </div>
     <script type="module" src="welcome.js"></script>
 </body>

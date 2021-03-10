@@ -9,38 +9,37 @@
 </head>
 
 <body>
-    <div id="panel">
-        <i id="backIcon" class="fas fa-long-arrow-alt-left fa-lg"></i>
-        <div id="form">
-            <div id="formAlert" class="error"></div>
+    <div class="layout">
+        <i class="layout__back-icon fas fa-long-arrow-alt-left fa-lg"></i>
+
+        <div class="form">
+            <div class="form__alert error"></div>
             <div class="form__input">
                 <label>Company's JIRA URL*</label>
-                <input id="urlInput" placeholder="https://your-domain.atlassian.net/" />
+                <input class="form__url-input" placeholder="https://your-domain.atlassian.net/" />
             </div>
             <div class="form__input--row">
-                <input type="checkbox" id="videoCheck" />
+                <input type="checkbox" class="form__video-check" />
                 <label>Record video</label>
             </div>
             <div class="form__input--row">
-                <input type="checkbox" id="unhandledErrorsCheck" />
+                <input type="checkbox" class="form__unhandled-errors-check" />
                 <label>Record unhandled errors</label>
             </div>
             <div class="form__input--row">
-                <input type="checkbox" id="networkErrorsCheck" />
+                <input type="checkbox" class="form__network-errors-check" />
                 <label>Record network errors</label>
             </div>
             <div class="form__input--row">
-                <input type="checkbox" id="consoleErrorsCheck" />
+                <input type="checkbox" class="form__console-errors-check" />
                 <label>Record console errors</label>
             </div>
             <div class="form__input--row">
-                <input type="checkbox" id="consoleWarningsCheck" />
+                <input type="checkbox" class="form__console-warnings-check" />
                 <label>Record console warnings</label>
             </div>
         </div>
-        <div id="buttons">
-            <button id="saveButton">Save</button>
-        </div>
+        <button class="form__button">Save</button>
     </div>
     <script type="module" src="settings.js"></script>
 </body>

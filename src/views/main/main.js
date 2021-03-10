@@ -1,18 +1,18 @@
 import ui from './ui.js';
 import issuesService from '../../services/issues.js';
 
-const RECORD_BUTTON_ID = 'recordButton';
-const PROJECTS_SELECTOR_ID = 'projectsSelector';
-const EVENTS_DIV_ID = 'events';
-const VIDEO_STATUS_DIV_ID = 'videoStatus';
+const FORM_PROJECTS_SELECTOR_CLASS = 'form__projects-selector';
+const LOG_RECORD_BUTTON_CLASS = 'log__record-button';
+const LOG_EVENTS_DIV_CLASS = 'log__events';
+const LOG_VIDEO_STATUS_DIV_CLASS = 'log__video-status';
 
-const settingsIcon = document.getElementById('settingsIcon');
-const projectsSelector = document.getElementById('projectsSelector');
-const typeSelector = document.getElementById('typeSelector');
-const titleInput = document.getElementById('titleInput');
-const descriptionInput = document.getElementById('descriptionInput');
-const createButton = document.getElementById('createButton');
-const recordButton = document.getElementById(RECORD_BUTTON_ID);
+const layoutSettingsIcon = document.getElementsByClassName('layout__settings-icon')[0];
+const formProjectsSelector = document.getElementsByClassName(FORM_PROJECTS_SELECTOR_CLASS)[0];
+const formTypeSelector = document.getElementsByClassName('form__type-selector')[0];
+const formTitleInput = document.getElementsByClassName('form__title-input')[0];
+const formDescriptionInput = document.getElementsByClassName('form__description-input')[0];
+const formCreateButton = document.getElementsByClassName('form__button')[0];
+const logRecordButton = document.getElementsByClassName(LOG_RECORD_BUTTON_CLASS)[0];
 
 const sendMessageToBackground = (message) => {
   chrome.runtime.sendMessage(message);
@@ -39,7 +39,7 @@ const formatNetworkErrorLog = (failedNetworkRequest) => {
 };
 
 const getDescription = (unhandledErrors, failedNetworkRequests, consoleErrors, consoleWarnings) => {
-  let description = descriptionInput.value;
+  let description = formDescriptionInput.value;
   if (unhandledErrors && unhandledErrors.length) {
     description += `\n\n*Unhandled errors* (flag)${unhandledErrors.map((unhandledError) => `\n{quote}${unhandledError}{quote}`)}`;
   }
@@ -65,12 +65,12 @@ const handleCreation = async ({
   const body = {
     fields: {
       project: {
-        key: projectsSelector.value,
+        key: formProjectsSelector.value,
       },
-      summary: titleInput.value,
+      summary: formTitleInput.value,
       description,
       issuetype: {
-        name: typeSelector.value,
+        name: formTypeSelector.value,
       },
     },
   };
@@ -80,12 +80,15 @@ const handleCreation = async ({
     const recordingBlob = await fetch(recordingUrl).then((r) => r.blob());
     await issuesService.attachRecordingToIssue(jiraUrl, parsedResponse.key, recordingBlob);
   }
-  descriptionInput.value = '';
-  titleInput.value = '';
+  formDescriptionInput.value = '';
+  formTitleInput.value = '';
   chrome.storage.sync.remove(
     ['unhandledErrors', 'failedNetworkRequests', 'consoleErrors', 'consoleWarnings', 'recordingUrl'],
     () => ui.loadDataIntoUi(
-      RECORD_BUTTON_ID, PROJECTS_SELECTOR_ID, EVENTS_DIV_ID, VIDEO_STATUS_DIV_ID,
+      FORM_PROJECTS_SELECTOR_CLASS,
+      LOG_RECORD_BUTTON_CLASS,
+      LOG_EVENTS_DIV_CLASS,
+      LOG_VIDEO_STATUS_DIV_CLASS,
     ),
   );
 };
@@ -96,24 +99,32 @@ const handleRecord = ({ isRecording }) => {
   } else {
     sendMessageToBackground('stopRecordingEvents');
   }
-  ui.loadRecordButtonText(RECORD_BUTTON_ID, !isRecording);
+  ui.loadRecordButtonText(LOG_RECORD_BUTTON_CLASS, !isRecording);
   chrome.storage.sync.set({ isRecording: !isRecording });
   // Timeout is needed in order to wait for the background to generate the recording URL
   setTimeout(() => ui.loadDataIntoUi(
-    RECORD_BUTTON_ID, PROJECTS_SELECTOR_ID, EVENTS_DIV_ID, VIDEO_STATUS_DIV_ID,
+    FORM_PROJECTS_SELECTOR_CLASS,
+    LOG_RECORD_BUTTON_CLASS,
+    LOG_EVENTS_DIV_CLASS,
+    LOG_VIDEO_STATUS_DIV_CLASS,
   ), 100);
 };
 
-createButton.onclick = () => {
+formCreateButton.onclick = () => {
   chrome.storage.sync.get(['unhandledErrors', 'failedNetworkRequests', 'consoleErrors', 'consoleWarnings', 'jiraUrl', 'recordingUrl'], handleCreation);
 };
 
-settingsIcon.onclick = () => {
+layoutSettingsIcon.onclick = () => {
   window.location.href = '../settings/settings.html';
 };
 
-recordButton.onclick = () => {
+logRecordButton.onclick = () => {
   chrome.storage.sync.get(['isRecording'], handleRecord);
 };
 
-ui.loadDataIntoUi(RECORD_BUTTON_ID, PROJECTS_SELECTOR_ID, EVENTS_DIV_ID, VIDEO_STATUS_DIV_ID);
+ui.loadDataIntoUi(
+  FORM_PROJECTS_SELECTOR_CLASS,
+  LOG_RECORD_BUTTON_CLASS,
+  LOG_EVENTS_DIV_CLASS,
+  LOG_VIDEO_STATUS_DIV_CLASS,
+);

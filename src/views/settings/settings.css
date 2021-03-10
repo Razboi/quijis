@@ -1,7 +1,7 @@
-#backIcon {
+.form__back-icon {
     margin-bottom: 10px;
 }
 
-#backIcon:hover {
+.form__back-icon:hover {
     cursor: pointer;
 }

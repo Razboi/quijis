@@ -1,8 +1,8 @@
 import isJiraUrlValid from '../../lib/isJiraUrlValid.js';
 
-const continueButton = document.getElementById('continueButton');
-const urlInput = document.getElementById('urlInput');
-const formAlert = document.getElementById('formAlert');
+const formButton = document.getElementsByClassName('form__button')[0];
+const formUrlInput = document.getElementsByClassName('form__url-input')[0];
+const formAlert = document.getElementsByClassName('form__alert')[0];
 
 const setInitialConfigurationAndRedirect = (jiraUrl, jiraProjects) => {
   const defaultPermissions = {
@@ -21,11 +21,11 @@ const setInitialConfigurationAndRedirect = (jiraUrl, jiraProjects) => {
   });
 };
 
-continueButton.onclick = () => {
-  isJiraUrlValid(urlInput.value).then(({ isValid, projects }) => {
+formButton.onclick = () => {
+  isJiraUrlValid(formUrlInput.value).then(({ isValid, projects }) => {
     if (isValid) {
       formAlert.innerHTML = '';
-      setInitialConfigurationAndRedirect(urlInput.value, projects);
+      setInitialConfigurationAndRedirect(formUrlInput.value, projects);
     } else {
       formAlert.innerHTML = 'Invalid URL';
     }

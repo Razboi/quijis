@@ -1,11 +1,11 @@
-#panel {
+.layout {
     width: 250px;
     padding: 5px;
     display: flex;
     flex-direction: column;
 }
 
-#form {
+.form {
     display: flex;
     flex-direction: column;
 }
@@ -23,16 +23,6 @@
     align-items: center;
 }
 
-#buttons {
-    display: flex;
-    margin-top: 10px;
-    justify-content: space-evenly;
-}
-
 .error {
     color: red;
-}
-
-.text-center {
-    text-align: center;
 }

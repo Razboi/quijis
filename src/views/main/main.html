@@ -9,17 +9,18 @@
 </head>
 
 <body>
-  <div id="panel">
-    <i id="settingsIcon" class="fas fa-cog fa-lg"></i>
-    <div id="form">
+  <div class="layout">
+    <i class="layout__settings-icon fas fa-cog fa-lg"></i>
+
+    <div class="form">
       <div class="form__input">
         <label>Project*</label>
-        <select id="projectsSelector">
+        <select class="form__projects-selector">
         </select>
       </div>
       <div class="form__input">
         <label>Issue type*</label>
-        <select id="typeSelector">
+        <select class="form__type-selector">
           <option value="Bug">Bug</option>
           <option value="Task">Task</option>
           <option value="Story">Story</option>
@@ -28,20 +29,21 @@
       </div>
       <div class="form__input">
         <label>Summary*</label>
-        <input id="titleInput" />
+        <input class="form__title-input" />
       </div>
       <div class="form__input">
         <label>Description</label>
-        <textarea rows="5" id="descriptionInput"></textarea>
+        <textarea rows="5" class="form__description-input"></textarea>
       </div>
+      <button class="form__button">Create issue</button>
     </div>
-    <div id="buttons">
-      <button id="createButton">Create issue</button>
-      <button id="recordButton">Record tab events</button>
-    </div>
-    <div id="videoStatus">
-    </div>
-    <div id="events">
+
+    <div class="log">
+      <div class="log__video-status">
+      </div>
+      <div class="log__events">
+      </div>
+      <button class="log__record-button">Record tab events</button>
     </div>
   </div>
   <script type="module" src="./main.js"></script>

@@ -1,48 +1,49 @@
+const getEventCount = (errors, text) => {
+  const eventsCountClass = errors?.length ? 'log__count error' : 'log__count';
+  return `<div class="${eventsCountClass}">${errors?.length || 0} ${text}</div>`;
+};
+
 const getEventsHtml = (data, hasErrors) => {
   let eventsHtml = '';
   if (data.permissions.recordUnhandledErrors) {
-    const eventsCountClass = data.unhandledErrors?.length ? 'events__count error' : 'events__count';
-    eventsHtml += `<span class="${eventsCountClass}">Unhandled errors: ${data.unhandledErrors?.length || 0}</span>`;
+    eventsHtml += getEventCount(data.unhandledErrors, 'unhandled errors');
   }
   if (data.permissions.recordNetworkErrors) {
-    const eventsCountClass = data.failedNetworkRequests?.length ? 'events__count error' : 'events__count';
-    eventsHtml += `<span class="${eventsCountClass}">Network errors: ${data.failedNetworkRequests?.length || 0}</span>`;
+    eventsHtml += getEventCount(data.failedNetworkRequests, 'network errors');
   }
   if (data.permissions.recordConsoleErrors) {
-    const eventsCountClass = data.consoleErrors?.length ? 'events__count error' : 'events__count';
-    eventsHtml += `<span class="${eventsCountClass}">Console errors: ${data.consoleErrors?.length || 0}</span>`;
+    eventsHtml += getEventCount(data.consoleErrors, 'console errors');
   }
   if (data.permissions.recordConsoleWarnings) {
-    const eventsCountClass = data.consoleWarnings?.length ? 'events__count error' : 'events__count';
-    eventsHtml += `<span class="${eventsCountClass}">Console warnings: ${data.consoleWarnings?.length || 0}</span>`;
+    eventsHtml += getEventCount(data.consoleWarnings, 'console warnings');
   }
   if (hasErrors || data.recordingUrl) {
-    eventsHtml += '<u id="clearEventsOption" class="events__item">Clear all</u>';
+    eventsHtml += '<u class="log__clear-button" class="log__item">Clear all</u>';
   }
   return eventsHtml;
 };
 
-const displayRecordedEvents = (data, eventsDivId) => {
-  const eventsDiv = document.getElementById(eventsDivId);
+const displayRecordedEvents = (data, logEventsClass) => {
+  const eventsDiv = document.getElementsByClassName(logEventsClass)[0];
   const hasErrors = data.unhandledErrors?.length || data.failedNetworkRequests?.length
     || data.consoleErrors?.length || data.consoleWarnings?.length;
   const eventsHtml = getEventsHtml(data, hasErrors);
   eventsDiv.innerHTML = eventsHtml;
   if (hasErrors || data.recordingUrl) {
-    document.getElementById('clearEventsOption').onclick = () => {
+    document.getElementsByClassName('log__clear-button')[0].onclick = () => {
       const emptyEventsLists = {
         unhandledErrors: [], consoleErrors: [], consoleWarnings: [], failedNetworkRequests: [],
       };
       chrome.storage.sync.set(emptyEventsLists);
       chrome.storage.sync.remove('recordingUrl');
-      displayRecordedEvents({ emptyEventsLists, permissions: data.permissions }, eventsDivId);
+      displayRecordedEvents({ emptyEventsLists, permissions: data.permissions }, logEventsClass);
     };
   }
 };
 
-const displayVideoStatus = (data, videoStatusDivId) => {
+const displayVideoStatus = (data, logVideoStatusDivClass) => {
   if (data.permissions.recordVideo) {
-    const videoStatusDiv = document.getElementById(videoStatusDivId);
+    const videoStatusDiv = document.getElementsByClassName(logVideoStatusDivClass)[0];
     let text;
     let icon;
     if (data.isRecording) {
@@ -52,12 +53,12 @@ const displayVideoStatus = (data, videoStatusDivId) => {
       text = data.recordingUrl ? 'Recording is ready' : 'No video recorded';
       icon = data.recordingUrl ? 'fas fa-video' : 'fas fa-video-slash';
     }
-    videoStatusDiv.innerHTML = `<span><i id="videoStatusIcon" class="${icon}"></i> ${text}</span>`;
+    videoStatusDiv.innerHTML = `<span><i class="${icon}"></i> ${text}</span>`;
   }
 };
 
-const loadRecordButtonText = (recordButtonId, isRecording) => {
-  const recordButton = document.getElementById(recordButtonId);
+const loadRecordButtonText = (logRecordButtonClass, isRecording) => {
+  const recordButton = document.getElementsByClassName(logRecordButtonClass)[0];
   if (!isRecording) {
     recordButton.textContent = 'Record events';
   } else {
@@ -65,8 +66,8 @@ const loadRecordButtonText = (recordButtonId, isRecording) => {
   }
 };
 
-const loadProjectsOptions = (projects, projectsSelectorId) => {
-  const projectsSelector = document.getElementById(projectsSelectorId);
+const loadProjectsOptions = (projects, formProjectsSelectorClass) => {
+  const projectsSelector = document.getElementsByClassName(formProjectsSelectorClass)[0];
   if (projects && projects.length) {
     const parsedProjects = JSON.parse(projects);
     let projectsOptions = '';
@@ -75,7 +76,9 @@ const loadProjectsOptions = (projects, projectsSelectorId) => {
   }
 };
 
-const loadDataIntoUi = (recordButtonId, projectsSelectorId, eventsDivId, videoStatusDivId) => {
+const loadDataIntoUi = (
+  formProjectsSelectorClass, logRecordButtonClass, logEventsClass, logVideoStatusDivClass,
+) => {
   chrome.storage.sync.get([
     'isRecording', 'unhandledErrors', 'failedNetworkRequests', 'consoleErrors', 'consoleWarnings',
     'projects', 'jiraUrl', 'recordingUrl', 'permissions',
@@ -84,10 +87,10 @@ const loadDataIntoUi = (recordButtonId, projectsSelectorId, eventsDivId, videoSt
       window.location.href = '../welcome/welcome.html';
       return;
     }
-    loadRecordButtonText(recordButtonId, data.isRecording);
-    displayRecordedEvents(data, eventsDivId);
-    displayVideoStatus(data, videoStatusDivId);
-    loadProjectsOptions(data.projects, projectsSelectorId);
+    loadRecordButtonText(logRecordButtonClass, data.isRecording);
+    displayRecordedEvents(data, logEventsClass);
+    displayVideoStatus(data, logVideoStatusDivClass);
+    loadProjectsOptions(data.projects, formProjectsSelectorClass);
   });
 };
 
