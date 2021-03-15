@@ -17,7 +17,7 @@ const setInitialConfigurationAndRedirect = (jiraUrl, jiraProjects) => {
     projects: jiraProjects,
     permissions: defaultPermissions,
   }, () => {
-    window.location.href = '../main/main.html';
+    window.location.href = '../record/record.html';
   });
 };
 

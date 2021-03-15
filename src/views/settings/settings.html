@@ -6,12 +6,19 @@
     <link rel="stylesheet" href="./settings.css">
     <link rel="stylesheet" href="../../assets/style.css">
     <link href="../../assets/fontawesome/css/all.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../../node_modules/bulma/css/bulma.css">
 </head>
 
 <body>
-    <div class="layout">
-        <i class="layout__back-icon fas fa-long-arrow-alt-left fa-lg"></i>
+    <div class="tabs">
+        <ul>
+            <li class="tabs__record"><a>Record</a></li>
+            <li class="tabs__create"><a>Create issue</a></li>
+            <li class="is-active"><a>Settings</a></li>
+        </ul>
+    </div>
 
+    <div class="container">
         <div class="form">
             <div class="form__alert error"></div>
             <div class="form__input">

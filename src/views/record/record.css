@@ -8,7 +8,7 @@
 }
 
 .log {
-    margin-top: 20px;
+    margin-top: 10px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -41,6 +41,11 @@
     margin-top: 5px;
 }
 
-.log__record-button {
+.log__record-icon {
     margin-top: 10px;
+    color: red;
+}
+
+.log__record-icon:hover {
+    cursor: pointer;
 }

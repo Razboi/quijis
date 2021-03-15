@@ -1,6 +1,5 @@
 import isJiraUrlValid from '../../lib/isJiraUrlValid.js';
 
-const formBackIcon = document.getElementsByClassName('layout__back-icon')[0];
 const formButton = document.getElementsByClassName('form__button')[0];
 const formUrlInput = document.getElementsByClassName('form__url-input')[0];
 const formAlert = document.getElementsByClassName('form__alert')[0];
@@ -9,6 +8,8 @@ const formUnhandledErrorsCheck = document.getElementsByClassName('form__unhandle
 const formNetworkErrorsCheck = document.getElementsByClassName('form__network-errors-check')[0];
 const formConsoleErrorsCheck = document.getElementsByClassName('form__console-errors-check')[0];
 const formConsoleWarningsCheck = document.getElementsByClassName('form__console-warnings-check')[0];
+const tabCreate = document.getElementsByClassName('tabs__create')[0];
+const tabRecord = document.getElementsByClassName('tabs__record')[0];
 
 const loadDataIntoUi = () => {
   chrome.storage.sync.get(['url', 'permissions'], ({ url, permissions }) => {
@@ -21,8 +22,12 @@ const loadDataIntoUi = () => {
   });
 };
 
-formBackIcon.onclick = () => {
-  window.location.href = '../main/main.html';
+tabRecord.onclick = () => {
+  window.location.href = '../settings/settings.html';
+};
+
+tabCreate.onclick = () => {
+  window.location.href = '../create/create.html';
 };
 
 formButton.onclick = () => {

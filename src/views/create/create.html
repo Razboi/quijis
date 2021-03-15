@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<html>
+
+<head>
+  <link rel="stylesheet" href="./create.css">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <link href="../../assets/fontawesome/css/all.css" rel="stylesheet">
+  <link rel="stylesheet" href="../../../node_modules/bulma/css/bulma.css">
+</head>
+
+<body>
+  <div class="tabs">
+    <ul>
+      <li class="tabs__record"><a>Record</a></li>
+      <li class="is-active"><a>Create issue</a></li>
+      <li class="tabs__settings"><a>Settings</a></li>
+    </ul>
+  </div>
+
+  <div class="container form">
+    <div class="form__input">
+      <label>Project*</label>
+      <select class="form__projects-selector">
+      </select>
+    </div>
+    <div class="form__input">
+      <label>Issue type*</label>
+      <select class="form__type-selector">
+        <option value="Bug">Bug</option>
+        <option value="Task">Task</option>
+        <option value="Story">Story</option>
+        <option value="Epic">Epic</option>
+      </select>
+    </div>
+    <div class="form__input">
+      <label>Summary*</label>
+      <input class="form__title-input" />
+    </div>
+    <div class="form__input">
+      <label>Description</label>
+      <textarea rows="5" class="form__description-input"></textarea>
+    </div>
+    <button class="form__button">Create issue</button>
+  </div>
+
+  <script type="module" src="./create.js"></script>
+</body>
+
+</html>

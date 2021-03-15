@@ -2,21 +2,14 @@ import ui from './ui.js';
 import issuesService from '../../services/issues.js';
 
 const FORM_PROJECTS_SELECTOR_CLASS = 'form__projects-selector';
-const LOG_RECORD_BUTTON_CLASS = 'log__record-button';
-const LOG_EVENTS_DIV_CLASS = 'log__events';
-const LOG_VIDEO_STATUS_DIV_CLASS = 'log__video-status';
 
-const layoutSettingsIcon = document.getElementsByClassName('layout__settings-icon')[0];
 const formProjectsSelector = document.getElementsByClassName(FORM_PROJECTS_SELECTOR_CLASS)[0];
 const formTypeSelector = document.getElementsByClassName('form__type-selector')[0];
 const formTitleInput = document.getElementsByClassName('form__title-input')[0];
 const formDescriptionInput = document.getElementsByClassName('form__description-input')[0];
 const formCreateButton = document.getElementsByClassName('form__button')[0];
-const logRecordButton = document.getElementsByClassName(LOG_RECORD_BUTTON_CLASS)[0];
-
-const sendMessageToBackground = (message) => {
-  chrome.runtime.sendMessage(message);
-};
+const tabRecord = document.getElementsByClassName('tabs__record')[0];
+const tabSettings = document.getElementsByClassName('tabs__settings')[0];
 
 const formatNetworkErrorLog = (failedNetworkRequest) => {
   const keyToHeaderMap = {
@@ -84,47 +77,20 @@ const handleCreation = async ({
   formTitleInput.value = '';
   chrome.storage.sync.remove(
     ['unhandledErrors', 'failedNetworkRequests', 'consoleErrors', 'consoleWarnings', 'recordingUrl'],
-    () => ui.loadDataIntoUi(
-      FORM_PROJECTS_SELECTOR_CLASS,
-      LOG_RECORD_BUTTON_CLASS,
-      LOG_EVENTS_DIV_CLASS,
-      LOG_VIDEO_STATUS_DIV_CLASS,
-    ),
+    () => ui.loadDataIntoUi(FORM_PROJECTS_SELECTOR_CLASS),
   );
-};
-
-const handleRecord = ({ isRecording }) => {
-  if (!isRecording) {
-    sendMessageToBackground('startRecordingEvents');
-  } else {
-    sendMessageToBackground('stopRecordingEvents');
-  }
-  ui.loadRecordButtonText(LOG_RECORD_BUTTON_CLASS, !isRecording);
-  chrome.storage.sync.set({ isRecording: !isRecording });
-  // Timeout is needed in order to wait for the background to generate the recording URL
-  setTimeout(() => ui.loadDataIntoUi(
-    FORM_PROJECTS_SELECTOR_CLASS,
-    LOG_RECORD_BUTTON_CLASS,
-    LOG_EVENTS_DIV_CLASS,
-    LOG_VIDEO_STATUS_DIV_CLASS,
-  ), 100);
 };
 
 formCreateButton.onclick = () => {
   chrome.storage.sync.get(['unhandledErrors', 'failedNetworkRequests', 'consoleErrors', 'consoleWarnings', 'jiraUrl', 'recordingUrl'], handleCreation);
 };
 
-layoutSettingsIcon.onclick = () => {
+tabSettings.onclick = () => {
   window.location.href = '../settings/settings.html';
 };
 
-logRecordButton.onclick = () => {
-  chrome.storage.sync.get(['isRecording'], handleRecord);
+tabRecord.onclick = () => {
+  window.location.href = '../record/record.html';
 };
 
-ui.loadDataIntoUi(
-  FORM_PROJECTS_SELECTOR_CLASS,
-  LOG_RECORD_BUTTON_CLASS,
-  LOG_EVENTS_DIV_CLASS,
-  LOG_VIDEO_STATUS_DIV_CLASS,
-);
+ui.loadDataIntoUi(FORM_PROJECTS_SELECTOR_CLASS);

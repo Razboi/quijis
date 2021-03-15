@@ -57,28 +57,16 @@ const displayVideoStatus = (data, logVideoStatusDivClass) => {
   }
 };
 
-const loadRecordButtonText = (logRecordButtonClass, isRecording) => {
-  const recordButton = document.getElementsByClassName(logRecordButtonClass)[0];
+const loadRecordIcon = (logRecordIconClass, isRecording) => {
+  const recordIcon = document.getElementsByClassName(logRecordIconClass)[0];
   if (!isRecording) {
-    recordButton.textContent = 'Record events';
+    recordIcon.className = 'log__record-icon fas fa-dot-circle fa-3x';
   } else {
-    recordButton.textContent = 'Stop recording';
+    recordIcon.className = 'log__record-icon fas fa-pause-circle fa-lg';
   }
 };
 
-const loadProjectsOptions = (projects, formProjectsSelectorClass) => {
-  const projectsSelector = document.getElementsByClassName(formProjectsSelectorClass)[0];
-  if (projects && projects.length) {
-    const parsedProjects = JSON.parse(projects);
-    let projectsOptions = '';
-    parsedProjects.forEach((project) => { projectsOptions += `<option value="${project.key}">${project.name}</option>`; });
-    projectsSelector.innerHTML = projectsOptions;
-  }
-};
-
-const loadDataIntoUi = (
-  formProjectsSelectorClass, logRecordButtonClass, logEventsClass, logVideoStatusDivClass,
-) => {
+const loadDataIntoUi = (logRecordIconClass, logEventsClass, logVideoStatusDivClass) => {
   chrome.storage.sync.get([
     'isRecording', 'unhandledErrors', 'failedNetworkRequests', 'consoleErrors', 'consoleWarnings',
     'projects', 'jiraUrl', 'recordingUrl', 'permissions',
@@ -87,13 +75,12 @@ const loadDataIntoUi = (
       window.location.href = '../welcome/welcome.html';
       return;
     }
-    loadRecordButtonText(logRecordButtonClass, data.isRecording);
+    loadRecordIcon(logRecordIconClass, data.isRecording);
     displayRecordedEvents(data, logEventsClass);
     displayVideoStatus(data, logVideoStatusDivClass);
-    loadProjectsOptions(data.projects, formProjectsSelectorClass);
   });
 };
 
 export default {
-  displayRecordedEvents, displayVideoStatus, loadDataIntoUi, loadRecordButtonText,
+  displayRecordedEvents, displayVideoStatus, loadDataIntoUi, loadRecordIcon,
 };
