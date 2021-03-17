@@ -1,14 +1,5 @@
-.layout__settings-icon {
-    display: flex !important;
-    justify-content: flex-end;
-}
-
-.layout__settings-icon:hover {
-    cursor: pointer;
-}
-
 .log {
-    margin-top: 10px;
+    padding-bottom: 12px;
     display: flex;
     flex-direction: column;
     align-items: center;

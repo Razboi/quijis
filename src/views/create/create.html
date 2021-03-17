@@ -19,30 +19,47 @@
     </ul>
   </div>
 
-  <div class="container form">
-    <div class="form__input">
-      <label>Project*</label>
-      <select class="form__projects-selector">
-      </select>
+  <div class="form container is-fluid">
+    <div class="field">
+      <label class="label">Project*</label>
+      <div class="control">
+        <div class="select is-fullwidth">
+          <select class="form__projects-selector">
+          </select>
+        </div>
+      </div>
     </div>
-    <div class="form__input">
-      <label>Issue type*</label>
-      <select class="form__type-selector">
-        <option value="Bug">Bug</option>
-        <option value="Task">Task</option>
-        <option value="Story">Story</option>
-        <option value="Epic">Epic</option>
-      </select>
+
+    <div class="field">
+      <label class="label">Issue type*</label>
+      <div class="control">
+        <div class="select is-fullwidth">
+          <select class="form__type-selector">
+            <option value="Bug">Bug</option>
+            <option value="Task">Task</option>
+            <option value="Story">Story</option>
+            <option value="Epic">Epic</option>
+          </select>
+        </div>
+      </div>
     </div>
-    <div class="form__input">
-      <label>Summary*</label>
-      <input class="form__title-input" />
+    <div class="field">
+      <label class="label">Summary*</label>
+      <div class="control">
+        <input class="input form__title-input" />
+      </div>
     </div>
-    <div class="form__input">
-      <label>Description</label>
-      <textarea rows="5" class="form__description-input"></textarea>
+    <div class="field">
+      <label class="label">Description</label>
+      <div class="control">
+        <textarea rows="5" class="textarea form__description-input"></textarea>
+      </div>
     </div>
-    <button class="form__button">Create issue</button>
+    <div class="field">
+      <div class="control">
+        <button class="button is-primary is-rounded is-fullwidth form__button">Create issue</button>
+      </div>
+    </div>
   </div>
 
   <script type="module" src="./create.js"></script>

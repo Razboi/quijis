@@ -18,35 +18,61 @@
         </ul>
     </div>
 
-    <div class="container">
-        <div class="form">
+    <div class="form container is-fluid">
+        <div class="field">
             <div class="form__alert error"></div>
             <div class="form__input">
-                <label>Company's JIRA URL*</label>
-                <input class="form__url-input" placeholder="https://your-domain.atlassian.net/" />
-            </div>
-            <div class="form__input--row">
-                <input type="checkbox" class="form__video-check" />
-                <label>Record video</label>
-            </div>
-            <div class="form__input--row">
-                <input type="checkbox" class="form__unhandled-errors-check" />
-                <label>Record unhandled errors</label>
-            </div>
-            <div class="form__input--row">
-                <input type="checkbox" class="form__network-errors-check" />
-                <label>Record network errors</label>
-            </div>
-            <div class="form__input--row">
-                <input type="checkbox" class="form__console-errors-check" />
-                <label>Record console errors</label>
-            </div>
-            <div class="form__input--row">
-                <input type="checkbox" class="form__console-warnings-check" />
-                <label>Record console warnings</label>
+                <label class="label">Company's JIRA URL*</label>
+                <div class="control">
+                    <input class="input form__url-input" placeholder="https://your-domain.atlassian.net/" />
+                </div>
             </div>
         </div>
-        <button class="form__button">Save</button>
+        <div class="field">
+            <div class="control">
+                <label class="checkbox">
+                    <input type="checkbox" class="form__video-check" />
+                    Record video
+                </label>
+            </div>
+        </div>
+        <div class="field">
+            <div class="control">
+                <label class="checkbox">
+                    <input type="checkbox" class="form__unhandled-errors-check" />
+                    Record unhandled errors
+                </label>
+            </div>
+        </div>
+        <div class="field">
+            <div class="control">
+                <label class="checkbox">
+                    <input type="checkbox" class="form__network-errors-check" />
+                    Record network errors
+                </label>
+            </div>
+        </div>
+        <div class="field">
+            <div class="control">
+                <label class="checkbox">
+                    <input type="checkbox" class="form__console-errors-check" />
+                    Record console errors
+                </label>
+            </div>
+        </div>
+        <div class="field">
+            <div class="control">
+                <label class="checkbox">
+                    <input type="checkbox" class="form__console-warnings-check" />
+                    Record console warnings
+                </label>
+            </div>
+        </div>
+        <div class="field">
+            <div class="control">
+                <button class="button is-primary is-rounded is-fullwidth form__button">Save</button>
+            </div>
+        </div>
     </div>
     <script type="module" src="settings.js"></script>
 </body>

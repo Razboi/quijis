@@ -23,7 +23,7 @@ const loadDataIntoUi = () => {
 };
 
 tabRecord.onclick = () => {
-  window.location.href = '../settings/settings.html';
+  window.location.href = '../record/record.html';
 };
 
 tabCreate.onclick = () => {
