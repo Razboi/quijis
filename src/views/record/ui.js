@@ -3,7 +3,7 @@ const getEventCount = (errors, text) => {
   return `<div class="${eventsCountClass}">${errors?.length || 0} ${text}</div>`;
 };
 
-const getEventsHtml = (data, hasErrors) => {
+const getEventsHtml = (data) => {
   let eventsHtml = '';
   if (data.permissions.recordUnhandledErrors) {
     eventsHtml += getEventCount(data.unhandledErrors, 'unhandled errors');
@@ -17,28 +17,7 @@ const getEventsHtml = (data, hasErrors) => {
   if (data.permissions.recordConsoleWarnings) {
     eventsHtml += getEventCount(data.consoleWarnings, 'console warnings');
   }
-  if (hasErrors || data.recordingUrl) {
-    eventsHtml += '<u class="log__clear-button" class="log__item">Clear all</u>';
-  }
   return eventsHtml;
-};
-
-const displayRecordedEvents = (data, logEventsClass) => {
-  const eventsDiv = document.getElementsByClassName(logEventsClass)[0];
-  const hasErrors = data.unhandledErrors?.length || data.failedNetworkRequests?.length
-    || data.consoleErrors?.length || data.consoleWarnings?.length;
-  const eventsHtml = getEventsHtml(data, hasErrors);
-  eventsDiv.innerHTML = eventsHtml;
-  if (hasErrors || data.recordingUrl) {
-    document.getElementsByClassName('log__clear-button')[0].onclick = () => {
-      const emptyEventsLists = {
-        unhandledErrors: [], consoleErrors: [], consoleWarnings: [], failedNetworkRequests: [],
-      };
-      chrome.storage.sync.set(emptyEventsLists);
-      chrome.storage.sync.remove('recordingUrl');
-      displayRecordedEvents({ emptyEventsLists, permissions: data.permissions }, logEventsClass);
-    };
-  }
 };
 
 const displayVideoStatus = (data, logVideoStatusDivClass) => {
@@ -57,12 +36,23 @@ const displayVideoStatus = (data, logVideoStatusDivClass) => {
   }
 };
 
+const displayRecordedEvents = (data, logEventsClass) => {
+  const eventsDiv = document.getElementsByClassName(logEventsClass)[0];
+  const eventsHtml = getEventsHtml(data);
+  const hasErrors = data.unhandledErrors?.length || data.failedNetworkRequests?.length
+    || data.consoleErrors?.length || data.consoleWarnings?.length;
+  eventsDiv.innerHTML = eventsHtml;
+  if (hasErrors || data.recordingUrl) {
+    document.getElementsByClassName('log__clear-button')[0].classList.remove('is-hidden');
+  }
+};
+
 const loadRecordIcon = (logRecordIconClass, isRecording) => {
   const recordIcon = document.getElementsByClassName(logRecordIconClass)[0];
   if (!isRecording) {
     recordIcon.className = 'log__record-icon fas fa-dot-circle fa-3x';
   } else {
-    recordIcon.className = 'log__record-icon fas fa-pause-circle fa-lg';
+    recordIcon.className = 'log__record-icon fas fa-pause-circle fa-3x';
   }
 };
 
@@ -82,5 +72,5 @@ const loadDataIntoUi = (logRecordIconClass, logEventsClass, logVideoStatusDivCla
 };
 
 export default {
-  displayRecordedEvents, displayVideoStatus, loadDataIntoUi, loadRecordIcon,
+  loadDataIntoUi, loadRecordIcon,
 };

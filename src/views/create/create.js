@@ -67,12 +67,14 @@ const handleCreation = async ({
       },
     },
   };
+  formCreateButton.classList.add('is-loading');
   const response = await issuesService.createIssue(jiraUrl, body);
   const parsedResponse = JSON.parse(response);
   if (recordingUrl) {
     const recordingBlob = await fetch(recordingUrl).then((r) => r.blob());
     await issuesService.attachRecordingToIssue(jiraUrl, parsedResponse.key, recordingBlob);
   }
+  formCreateButton.classList.remove('is-loading');
   formDescriptionInput.value = '';
   formTitleInput.value = '';
   chrome.storage.sync.remove(

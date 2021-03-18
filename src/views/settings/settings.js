@@ -31,8 +31,12 @@ tabCreate.onclick = () => {
 };
 
 formButton.onclick = () => {
+  formButton.classList.add('is-loading');
   isJiraUrlValid(formUrlInput.value).then(({ isValid, projects }) => {
+    formButton.classList.remove('is-loading');
     if (isValid) {
+      formUrlInput.classList.remove('is-danger');
+      formAlert.classList.add('is-hidden');
       formAlert.innerHTML = '';
       chrome.storage.sync.set({
         jiraUrl: formUrlInput.value,
@@ -46,6 +50,8 @@ formButton.onclick = () => {
         },
       });
     } else {
+      formUrlInput.classList.add('is-danger');
+      formAlert.classList.remove('is-hidden');
       formAlert.innerHTML = 'Invalid URL';
     }
   });
