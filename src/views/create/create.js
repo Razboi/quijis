@@ -6,10 +6,14 @@ const FORM_PROJECTS_SELECTOR_CLASS = 'form__projects-selector';
 const formProjectsSelector = document.getElementsByClassName(FORM_PROJECTS_SELECTOR_CLASS)[0];
 const formTypeSelector = document.getElementsByClassName('form__type-selector')[0];
 const formTitleInput = document.getElementsByClassName('form__title-input')[0];
+const formTitleError = document.getElementsByClassName('form__title-error')[0];
 const formDescriptionInput = document.getElementsByClassName('form__description-input')[0];
 const formCreateButton = document.getElementsByClassName('form__button')[0];
+const formButtonError = document.getElementsByClassName('form__button-error')[0];
 const tabRecord = document.getElementsByClassName('tabs__record')[0];
 const tabSettings = document.getElementsByClassName('tabs__settings')[0];
+
+let isProcessing = false;
 
 const formatNetworkErrorLog = (failedNetworkRequest) => {
   const keyToHeaderMap = {
@@ -52,6 +56,9 @@ const getDescription = (unhandledErrors, failedNetworkRequests, consoleErrors, c
 const handleCreation = async ({
   unhandledErrors, failedNetworkRequests, consoleErrors, consoleWarnings, jiraUrl, recordingUrl,
 }) => {
+  isProcessing = true;
+  formButtonError.innerHTML = '';
+  formButtonError.classList.add('is-hidden');
   const description = getDescription(
     unhandledErrors, failedNetworkRequests, consoleErrors, consoleWarnings,
   );
@@ -68,13 +75,21 @@ const handleCreation = async ({
     },
   };
   formCreateButton.classList.add('is-loading');
-  const response = await issuesService.createIssue(jiraUrl, body);
-  const parsedResponse = JSON.parse(response);
-  if (recordingUrl) {
-    const recordingBlob = await fetch(recordingUrl).then((r) => r.blob());
-    await issuesService.attachRecordingToIssue(jiraUrl, parsedResponse.key, recordingBlob);
+  try {
+    const response = await issuesService.createIssue(jiraUrl, body);
+    const parsedResponse = JSON.parse(response);
+    if (recordingUrl) {
+      const recordingBlob = await fetch(recordingUrl).then((r) => r.blob());
+      await issuesService.attachRecordingToIssue(jiraUrl, parsedResponse.key, recordingBlob);
+    }
+  } catch (error) {
+    formButtonError.innerHTML = 'There was an unexpected error creating the issue. Please try again';
+    formButtonError.classList.remove('is-hidden');
+    return;
+  } finally {
+    isProcessing = false;
+    formCreateButton.classList.remove('is-loading');
   }
-  formCreateButton.classList.remove('is-loading');
   formDescriptionInput.value = '';
   formTitleInput.value = '';
   chrome.storage.sync.remove(
@@ -83,8 +98,25 @@ const handleCreation = async ({
   );
 };
 
+const checkFormIsValid = () => {
+  let isValid = true;
+  formTitleInput.classList.remove('is-danger');
+  formTitleError.classList.add('is-hidden');
+  formTitleError.innerHTML = '';
+  if (!formTitleInput.value) {
+    isValid = false;
+    formTitleError.innerHTML = 'Summary is required';
+    formTitleError.classList.remove('is-hidden');
+    formTitleInput.classList.add('is-danger');
+  }
+  return isValid;
+};
+
 formCreateButton.onclick = () => {
-  chrome.storage.sync.get(['unhandledErrors', 'failedNetworkRequests', 'consoleErrors', 'consoleWarnings', 'jiraUrl', 'recordingUrl'], handleCreation);
+  const isFormValid = checkFormIsValid();
+  if (isFormValid && !isProcessing) {
+    chrome.storage.sync.get(['unhandledErrors', 'failedNetworkRequests', 'consoleErrors', 'consoleWarnings', 'jiraUrl', 'recordingUrl'], handleCreation);
+  }
 };
 
 tabSettings.onclick = () => {

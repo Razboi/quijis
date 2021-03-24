@@ -12,13 +12,18 @@
 <body>
     <div class="form container is-fluid">
         <p class="form__header">Welcome to Quijis, please enter your company JIRA URL to continue</p>
-        <div class="form__alert error"></div>
         <div class="field">
             <div class="control">
                 <input class="input form__url-input" placeholder="https://your-domain.atlassian.net/" />
             </div>
+            <p class="form__error help is-danger is-hidden"></p>
         </div>
-        <button class="button is-primary is-fullwidth is-rounded form__button">Continue</button>
+        <div class="field">
+            <div class="control">
+                <button class="button is-primary is-fullwidth is-rounded form__button">Continue</button>
+            </div>
+            <p class="form__button-error help is-danger is-hidden has-text-centered"></p>
+        </div>
     </div>
     <script type="module" src="welcome.js"></script>
 </body>
