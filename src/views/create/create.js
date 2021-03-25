@@ -5,6 +5,9 @@ const FORM_PROJECTS_SELECTOR_CLASS = 'form__projects-selector';
 
 const formProjectsSelector = document.getElementsByClassName(FORM_PROJECTS_SELECTOR_CLASS)[0];
 const formTypeSelector = document.getElementsByClassName('form__type-selector')[0];
+const formEpicField = document.getElementsByClassName('form__epic-field')[0];
+const formEpicInput = document.getElementsByClassName('form__epic-input')[0];
+const formEpicError = document.getElementsByClassName('form__epic-error')[0];
 const formTitleInput = document.getElementsByClassName('form__title-input')[0];
 const formTitleError = document.getElementsByClassName('form__title-error')[0];
 const formDescriptionInput = document.getElementsByClassName('form__description-input')[0];
@@ -74,6 +77,9 @@ const handleCreation = async ({
       },
     },
   };
+  if (formTypeSelector.value === 'Epic') {
+    body.fields.customfield_10011 = formEpicInput.value;
+  }
   formCreateButton.classList.add('is-loading');
   try {
     const response = await issuesService.createIssue(jiraUrl, body);
@@ -91,6 +97,7 @@ const handleCreation = async ({
     formCreateButton.classList.remove('is-loading');
   }
   formDescriptionInput.value = '';
+  formEpicInput.value = '';
   formTitleInput.value = '';
   chrome.storage.sync.remove(
     ['unhandledErrors', 'failedNetworkRequests', 'consoleErrors', 'consoleWarnings', 'recordingUrl'],
@@ -98,16 +105,26 @@ const handleCreation = async ({
   );
 };
 
+// TODO: REFACTOR
 const checkFormIsValid = () => {
   let isValid = true;
   formTitleInput.classList.remove('is-danger');
   formTitleError.classList.add('is-hidden');
   formTitleError.innerHTML = '';
+  formEpicInput.classList.remove('is-danger');
+  formEpicError.classList.add('is-hidden');
+  formEpicInput.innerHTML = '';
   if (!formTitleInput.value) {
     isValid = false;
     formTitleError.innerHTML = 'Summary is required';
     formTitleError.classList.remove('is-hidden');
     formTitleInput.classList.add('is-danger');
+  }
+  if (formTypeSelector.value === 'Epic' && !formEpicInput.value) {
+    isValid = false;
+    formEpicError.innerHTML = 'Epic name is required';
+    formEpicError.classList.remove('is-hidden');
+    formEpicInput.classList.add('is-danger');
   }
   return isValid;
 };
@@ -116,6 +133,14 @@ formCreateButton.onclick = () => {
   const isFormValid = checkFormIsValid();
   if (isFormValid && !isProcessing) {
     chrome.storage.sync.get(['unhandledErrors', 'failedNetworkRequests', 'consoleErrors', 'consoleWarnings', 'jiraUrl', 'recordingUrl'], handleCreation);
+  }
+};
+
+formTypeSelector.onchange = (event) => {
+  if (event.target.value === 'Epic') {
+    formEpicField.classList.remove('is-hidden');
+  } else {
+    formEpicField.classList.add('is-hidden');
   }
 };
 
