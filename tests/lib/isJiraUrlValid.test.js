@@ -1,4 +1,4 @@
-const isJiraUrlValid = require('../../src/lib/isJiraUrlValid.js');
+import isJiraUrlValid from '../../src/lib/isJiraUrlValid.js';
 
 test('checks if JIRA project URL is valid', () => {
   isJiraUrlValid('invalidURL').then(({ isValid }) => expect(isValid).toBe(false));
