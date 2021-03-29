@@ -2,7 +2,8 @@ const XHR = new XMLHttpRequest();
 
 const addListeners = (xhr, resolve, reject) => {
   XHR.onload = function handleLoad() {
-    if (xhr.status !== 200) {
+    const successfulCodesRegex = /^2[0-9][0-9]$/;
+    if (!successfulCodesRegex.test(xhr.status)) {
       return reject(`Error ${xhr.status}: ${xhr.statusText}`);
     }
     return resolve(xhr.response);

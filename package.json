@@ -1,11 +1,11 @@
 {
   "name": "quijis",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Chrome extension to create Jira tasks with errors log and video recording",
   "main": "index.js",
   "scripts": {
     "lint": "eslint src",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -18,8 +18,14 @@
   },
   "homepage": "https://github.com/Razboi/quijis#readme",
   "devDependencies": {
+    "@babel/plugin-transform-modules-commonjs": "^7.13.8",
     "eslint": "^7.20.0",
     "eslint-config-airbnb-base": "^14.2.1",
-    "eslint-plugin-import": "^2.22.1"
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-jest": "^24.1.5",
+    "jest": "^26.6.3"
+  },
+  "dependencies": {
+    "bulma": "^0.9.2"
   }
 }

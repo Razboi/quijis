@@ -1,0 +1,38 @@
+.log {
+  padding-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.log__video-status {
+  text-align: center;
+}
+
+.log__events {
+  display: flex;
+  flex-direction: column;
+  margin-top: 10px;
+}
+
+.log__clear-button {
+  margin-top: 10px;
+}
+
+.log__clear-button:hover {
+  cursor: pointer;
+}
+
+.log__count:not(:first-child) {
+  margin-top: 5px;
+}
+
+.log__record-icon {
+  margin-top: 10px;
+  color: red;
+}
+
+.log__record-icon:hover {
+  cursor: pointer;
+}

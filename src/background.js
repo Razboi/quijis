@@ -167,28 +167,6 @@ const handleEvent = (debuggeeId, message, params) => {
   }
 };
 
-const startRecordingEvents = () => {
-  chrome.storage.sync.remove('recordedTabId');
-  chrome.storage.sync.set({
-    unhandledErrors: [], consoleErrors: [], consoleWarnings: [], failedNetworkRequests: [],
-  });
-  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    const currentTabId = tabs[0].id;
-    chrome.debugger.attach({ tabId: currentTabId }, '1.0', () => {
-      chrome.storage.sync.get('recordVideo', ({ recordVideo }) => {
-        if (recordVideo) {
-          startRecordingScreen();
-        }
-        chrome.debugger.sendCommand({ tabId: currentTabId }, 'Network.enable');
-        chrome.debugger.sendCommand({ tabId: currentTabId }, 'Runtime.discardConsoleEntries');
-        chrome.debugger.sendCommand({ tabId: currentTabId }, 'Runtime.enable');
-        chrome.debugger.onEvent.addListener(handleEvent);
-        chrome.storage.sync.set({ recordedTabId: currentTabId });
-      });
-    });
-  });
-};
-
 const stopRecordingScreen = () => {
   if (navigator.streamChunks) {
     const recordingBlob = new Blob(navigator.streamChunks);
@@ -202,11 +180,55 @@ const stopRecordingScreen = () => {
   }
 };
 
-const stopRecordingEvents = () => {
+const stopRecordingEvents = (detachDebugger = true) => {
   stopRecordingScreen();
   chrome.debugger.onEvent.removeListener(handleEvent);
   chrome.storage.sync.get('recordedTabId', ({ recordedTabId }) => {
-    chrome.debugger.detach({ tabId: recordedTabId });
+    if (detachDebugger) {
+      chrome.debugger.detach({ tabId: recordedTabId });
+    }
+    chrome.storage.sync.remove('recordedTabId');
+    // eslint-disable-next-line no-use-before-define
+    chrome.tabs.onRemoved.removeListener(handleTabClosed);
+  });
+};
+
+const handleTabClosed = (closedTabId) => {
+  chrome.storage.sync.get('recordedTabId', ({ recordedTabId }) => {
+    if (closedTabId === recordedTabId) {
+      // the debugger must not be detached when the recorded tab was closed
+      stopRecordingEvents(false);
+      chrome.storage.sync.remove('recordingUrl');
+      chrome.storage.sync.set({
+        unhandledErrors: [],
+        consoleErrors: [],
+        consoleWarnings: [],
+        failedNetworkRequests: [],
+        isRecording: false,
+      });
+    }
+  });
+};
+
+const startRecordingEvents = () => {
+  chrome.storage.sync.set({
+    unhandledErrors: [], consoleErrors: [], consoleWarnings: [], failedNetworkRequests: [],
+  });
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    const currentTabId = tabs[0].id;
+    chrome.debugger.attach({ tabId: currentTabId }, '1.0', () => {
+      chrome.storage.sync.get('permissions', ({ permissions }) => {
+        if (permissions.recordVideo) {
+          startRecordingScreen();
+        }
+        chrome.debugger.sendCommand({ tabId: currentTabId }, 'Network.enable');
+        chrome.debugger.sendCommand({ tabId: currentTabId }, 'Runtime.discardConsoleEntries');
+        chrome.debugger.sendCommand({ tabId: currentTabId }, 'Runtime.enable');
+        chrome.debugger.onEvent.addListener(handleEvent);
+        chrome.storage.sync.set({ recordedTabId: currentTabId });
+        chrome.tabs.onRemoved.addListener(handleTabClosed);
+      });
+    });
   });
 };
 
@@ -219,9 +241,9 @@ chrome.runtime.onMessage.addListener((message) => {
 });
 
 const listAndStoreProjects = () => {
-  chrome.storage.sync.get('url', ({ url }) => {
+  chrome.storage.sync.get('jiraUrl', ({ jiraUrl }) => {
     const xmlhttp = new XMLHttpRequest();
-    xmlhttp.open('GET', `${url}/rest/api/2/project`, true);
+    xmlhttp.open('GET', `${jiraUrl}/rest/api/2/project`, true);
     xmlhttp.onreadystatechange = function handleStateChange() {
       if (xmlhttp.readyState === 4) {
         chrome.storage.sync.set({ projects: xmlhttp.responseText });

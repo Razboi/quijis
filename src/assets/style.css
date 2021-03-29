@@ -1,38 +1,10 @@
-#panel {
-    width: 250px;
-    padding: 5px;
-    display: flex;
-    flex-direction: column;
+.form {
+  padding-bottom: 12px;
+}
+.is-primary {
+  background-color: #9370DB !important;
 }
 
-#form {
-    display: flex;
-    flex-direction: column;
-}
-
-.form__input {
-    margin-bottom: 10px;
-    display: flex;
-    flex-direction: column;
-}
-
-.form__input--row {
-    margin-bottom: 10px;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-}
-
-#buttons {
-    display: flex;
-    margin-top: 10px;
-    justify-content: space-evenly;
-}
-
-.error {
-    color: red;
-}
-
-.text-center {
-    text-align: center;
+.is-primary:focus:not(:active) {
+  box-shadow: 0 0 0 0.125em rgb(147 112 219 / 25%) !important;
 }
