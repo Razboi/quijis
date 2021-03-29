@@ -1,7 +1,7 @@
 {
-  "name": "Quijis",
+  "name": "Quijis - Quick JIRA issues",
   "version": "0.4.0",
-  "description": "Quick JIRA issues with error logs and video attachment.",
+  "description": "Create JIRA issues with automatic error logs and video attachment.",
   "permissions": [
     "declarativeContent",
     "storage",
