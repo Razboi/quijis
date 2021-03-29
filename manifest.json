@@ -1,7 +1,7 @@
 {
-  "name": "Quijis",
-  "version": "1.0",
-  "description": "",
+  "name": "Quijis - Quick JIRA issues",
+  "version": "0.4.0",
+  "description": "Create JIRA issues with automatic error logs and video attachment.",
   "permissions": [
     "declarativeContent",
     "storage",
@@ -17,19 +17,19 @@
     "persistent": false
   },
   "page_action": {
-    "default_popup": "src/views/main/main.html",
+    "default_popup": "src/views/record/record.html",
     "default_icon": {
-      "16": "src/assets/images/get_started16.png",
-      "32": "src/assets/images/get_started32.png",
-      "48": "src/assets/images/get_started48.png",
-      "128": "src/assets/images/get_started128.png"
+      "16": "src/assets/images/quijis_16.png",
+      "32": "src/assets/images/quijis_32.png",
+      "48": "src/assets/images/quijis_48.png",
+      "128": "src/assets/images/quijis_128.png"
     }
   },
   "icons": {
-    "16": "src/assets/images/get_started16.png",
-    "32": "src/assets/images/get_started32.png",
-    "48": "src/assets/images/get_started48.png",
-    "128": "src/assets/images/get_started128.png"
+    "16": "src/assets/images/quijis_16.png",
+    "32": "src/assets/images/quijis_32.png",
+    "48": "src/assets/images/quijis_48.png",
+    "128": "src/assets/images/quijis_128.png"
   },
   "manifest_version": 2
 }

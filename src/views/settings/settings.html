@@ -3,46 +3,79 @@
 <html>
 
 <head>
-    <link rel="stylesheet" href="./settings.css">
-    <link rel="stylesheet" href="../../assets/style.css">
-    <link href="../../assets/fontawesome/css/all.css" rel="stylesheet">
+  <link rel="stylesheet" href="./settings.css">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <link href="../../assets/fontawesome/css/all.css" rel="stylesheet">
+  <link rel="stylesheet" href="../../../node_modules/bulma/css/bulma.css">
 </head>
 
 <body>
-    <div id="panel">
-        <i id="backIcon" class="fas fa-long-arrow-alt-left fa-lg"></i>
-        <div id="form">
-            <div id="formAlert" class="error"></div>
-            <div class="form__input">
-                <label>Company's JIRA URL*</label>
-                <input id="urlInput" placeholder="https://your-domain.atlassian.net/" />
-            </div>
-            <div class="form__input--row">
-                <input type="checkbox" id="videoCheck" />
-                <label>Record video</label>
-            </div>
-            <div class="form__input--row">
-                <input type="checkbox" id="unhandledErrorsCheck" />
-                <label>Record unhandled errors</label>
-            </div>
-            <div class="form__input--row">
-                <input type="checkbox" id="networkErrorsCheck" />
-                <label>Record network errors</label>
-            </div>
-            <div class="form__input--row">
-                <input type="checkbox" id="consoleErrorsCheck" />
-                <label>Record console errors</label>
-            </div>
-            <div class="form__input--row">
-                <input type="checkbox" id="consoleWarningsCheck" />
-                <label>Record console warnings</label>
-            </div>
+  <div class="tabs">
+    <ul>
+      <li class="tabs__record"><a>Record</a></li>
+      <li class="tabs__create"><a>Create issue</a></li>
+      <li class="is-active"><a>Settings</a></li>
+    </ul>
+  </div>
+
+  <div class="form container is-fluid">
+    <div class="field">
+      <div class="form__input">
+        <label class="label">Company's JIRA URL*</label>
+        <div class="control">
+          <input class="input form__url-input" placeholder="https://your-domain.atlassian.net/" />
         </div>
-        <div id="buttons">
-            <button id="saveButton">Save</button>
-        </div>
+      </div>
+      <p class="form__error help is-danger is-hidden"></p>
     </div>
-    <script type="module" src="settings.js"></script>
+    <div class="field">
+      <div class="control">
+        <label class="checkbox">
+          <input type="checkbox" class="form__video-check" />
+          Record video
+        </label>
+      </div>
+    </div>
+    <div class="field">
+      <div class="control">
+        <label class="checkbox">
+          <input type="checkbox" class="form__unhandled-errors-check" />
+          Record unhandled errors
+        </label>
+      </div>
+    </div>
+    <div class="field">
+      <div class="control">
+        <label class="checkbox">
+          <input type="checkbox" class="form__network-errors-check" />
+          Record network errors
+        </label>
+      </div>
+    </div>
+    <div class="field">
+      <div class="control">
+        <label class="checkbox">
+          <input type="checkbox" class="form__console-errors-check" />
+          Record console errors
+        </label>
+      </div>
+    </div>
+    <div class="field">
+      <div class="control">
+        <label class="checkbox">
+          <input type="checkbox" class="form__console-warnings-check" />
+          Record console warnings
+        </label>
+      </div>
+    </div>
+    <div class="field">
+      <div class="control">
+        <button class="button is-primary is-rounded is-fullwidth form__button">Save</button>
+      </div>
+      <p class="form__button-error help is-danger is-hidden has-text-centered"></p>
+    </div>
+  </div>
+  <script type="module" src="settings.js"></script>
 </body>
 
 </html>
