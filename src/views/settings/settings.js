@@ -15,8 +15,8 @@ const tabRecord = document.getElementsByClassName('tabs__record')[0];
 let isProcessing = false;
 
 const loadDataIntoUi = () => {
-  chrome.storage.sync.get(['url', 'permissions'], ({ url, permissions }) => {
-    formUrlInput.value = url;
+  chrome.storage.sync.get(['jiraUrl', 'permissions'], ({ jiraUrl, permissions }) => {
+    formUrlInput.value = jiraUrl;
     formVideoCheck.checked = permissions.recordVideo;
     formUnhandledErrorsCheck.checked = permissions.recordUnhandledErrors;
     formNetworkErrorsCheck.checked = permissions.recordNetworkErrors;
