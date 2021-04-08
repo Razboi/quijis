@@ -8,7 +8,7 @@
 
 ## Installation
 ### For users
-Install it through the [Chrome web store](#)
+Install it through the [Chrome web store](https://chrome.google.com/webstore/detail/quijis-quick-jira-issues/ghcghfllbidkldfjkpghkeiopdikfbpp)
 ### For developers
 1. Install all depencencies
 2. Clone the **dev** branch. All PRs must be submitted to this branch
