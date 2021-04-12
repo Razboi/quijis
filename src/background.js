@@ -102,8 +102,8 @@ const handleNetworkResponseReceived = (params) => {
 };
 
 const handleNetworkEvent = (message, params) => {
-  chrome.storage.sync.get(['recordNetworkErrors'], ({ recordNetworkErrors }) => {
-    if (!recordNetworkErrors || params.type !== 'XHR') {
+  chrome.storage.sync.get(['permissions'], ({ permissions }) => {
+    if (!permissions.recordNetworkErrors || params.type !== 'XHR') {
       return;
     }
     if (message === 'Network.requestWillBeSent') {
@@ -130,26 +130,17 @@ const storeConsoleEvent = (eventParams) => {
   });
 };
 
-const getErrorTypeToRecordingPermissionMap = () => {
-  const errorTypeToRecordingPermissionMap = {};
-  chrome.storage.sync.get(['recordConsoleErrors', 'recordConsoleWarnings'], ({ recordConsoleErrors, recordConsoleWarnings }) => {
-    errorTypeToRecordingPermissionMap.error = recordConsoleErrors;
-    errorTypeToRecordingPermissionMap.warning = recordConsoleWarnings;
-  });
-  return errorTypeToRecordingPermissionMap;
-};
-
 const handleRuntimeEvent = (message, params) => {
   if (message === 'Runtime.consoleAPICalled' && (params.type === 'error' || params.type === 'warning')) {
-    const errorTypeToRecordingPermissionMap = getErrorTypeToRecordingPermissionMap();
-    const isEventRecordingPermitted = errorTypeToRecordingPermissionMap[params.type];
-    if (isEventRecordingPermitted) {
-      storeConsoleEvent(params);
-    }
+    chrome.storage.sync.get(['permissions'], ({ permissions }) => {
+      if ((params.type === 'error' && permissions.recordConsoleErrors) || (params.type === 'warning' && permissions.recordConsoleWarnings)) {
+        storeConsoleEvent(params);
+      }
+    });
   }
   if (message === 'Runtime.exceptionThrown') {
-    chrome.storage.sync.get(['unhandledErrors', 'recordUnhandledErrors'], ({ unhandledErrors, recordUnhandledErrors }) => {
-      if (recordUnhandledErrors) {
+    chrome.storage.sync.get(['unhandledErrors', 'permissions'], ({ unhandledErrors, permissions }) => {
+      if (permissions.recordUnhandledErrors) {
         unhandledErrors.push(params.exceptionDetails.exception.description);
         chrome.storage.sync.set({ unhandledErrors });
       }
