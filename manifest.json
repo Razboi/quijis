@@ -1,11 +1,10 @@
 {
   "name": "Quijis - Quick JIRA issues",
-  "version": "0.5.1",
+  "version": "0.5.3",
   "description": "Create JIRA issues with automatic error logs and video attachment.",
   "permissions": [
     "declarativeContent",
     "storage",
-    "tabs",
     "debugger",
     "desktopCapture",
     "<all_urls>"
