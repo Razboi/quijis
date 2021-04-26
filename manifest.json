@@ -5,7 +5,6 @@
   "permissions": [
     "declarativeContent",
     "storage",
-    "tabs",
     "debugger",
     "desktopCapture",
     "<all_urls>"
