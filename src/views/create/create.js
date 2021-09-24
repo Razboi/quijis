@@ -12,7 +12,8 @@ const formTitleInput = document.getElementsByClassName('form__title-input')[0];
 const formTitleError = document.getElementsByClassName('form__title-error')[0];
 const formDescriptionInput = document.getElementsByClassName('form__description-input')[0];
 const formCreateButton = document.getElementsByClassName('form__button')[0];
-const formButtonError = document.getElementsByClassName('form__button-error')[0];
+const formHelperError = document.getElementsByClassName('form__helper-error')[0];
+const formHelperSuccess = document.getElementsByClassName('form__helper-success')[0];
 const tabRecord = document.getElementsByClassName('tabs__record')[0];
 const tabSettings = document.getElementsByClassName('tabs__settings')[0];
 
@@ -56,12 +57,9 @@ const getDescription = (unhandledErrors, failedNetworkRequests, consoleErrors, c
   return description;
 };
 
-const handleCreation = async ({
-  unhandledErrors, failedNetworkRequests, consoleErrors, consoleWarnings, jiraUrl, recordingUrl,
+const getCreationBody = ({
+  unhandledErrors, failedNetworkRequests, consoleErrors, consoleWarnings,
 }) => {
-  isProcessing = true;
-  formButtonError.innerHTML = '';
-  formButtonError.classList.add('is-hidden');
   const description = getDescription(
     unhandledErrors, failedNetworkRequests, consoleErrors, consoleWarnings,
   );
@@ -80,29 +78,61 @@ const handleCreation = async ({
   if (formTypeSelector.value === 'Epic') {
     body.fields.customfield_10011 = formEpicInput.value;
   }
-  formCreateButton.classList.add('is-loading');
-  try {
-    const response = await issuesService.createIssue(jiraUrl, body);
-    const parsedResponse = JSON.parse(response);
-    if (recordingUrl) {
-      const recordingBlob = await fetch(recordingUrl).then((r) => r.blob());
-      await issuesService.attachRecordingToIssue(jiraUrl, parsedResponse.key, recordingBlob);
-    }
-  } catch (error) {
-    formButtonError.innerHTML = 'There was an unexpected error creating the issue. Please try again';
-    formButtonError.classList.remove('is-hidden');
-    return;
-  } finally {
-    isProcessing = false;
-    formCreateButton.classList.remove('is-loading');
+  return body;
+};
+
+const makeIssueCreationRequest = async ({ jiraUrl, body, recordingUrl }) => {
+  const response = await issuesService.createIssue(jiraUrl, body);
+  const parsedResponse = JSON.parse(response);
+  if (recordingUrl) {
+    const recordingBlob = await fetch(recordingUrl).then((r) => r.blob());
+    await issuesService.attachRecordingToIssue(jiraUrl, parsedResponse.key, recordingBlob);
   }
+  return parsedResponse;
+};
+
+const prepareIssueCreation = () => {
+  isProcessing = true;
+  formHelperError.innerHTML = '';
+  formHelperError.classList.add('is-hidden');
+  formHelperSuccess.innerHTML = '';
+  formHelperSuccess.classList.add('is-hidden');
+  formCreateButton.classList.add('is-loading');
+};
+
+const handleSuccessfulCreation = ({ response, jiraUrl }) => {
+  isProcessing = false;
+  formCreateButton.classList.remove('is-loading');
+
   formDescriptionInput.value = '';
   formEpicInput.value = '';
   formTitleInput.value = '';
+
+  const linkToIssueHtml = `<a href="${jiraUrl}browse/${response.key}" target="_blank">${response.key}</a>`;
+  formHelperSuccess.innerHTML = `Issue <b>${linkToIssueHtml}</b> successfully created`;
+  formHelperSuccess.classList.remove('is-hidden');
+
   chrome.storage.sync.remove(
     ['unhandledErrors', 'failedNetworkRequests', 'consoleErrors', 'consoleWarnings', 'recordingUrl'],
     () => ui.loadDataIntoUi(FORM_PROJECTS_SELECTOR_CLASS),
   );
+};
+
+const handleCreation = async ({
+  unhandledErrors, failedNetworkRequests, consoleErrors, consoleWarnings, jiraUrl, recordingUrl,
+}) => {
+  prepareIssueCreation();
+
+  const body = getCreationBody({
+    unhandledErrors, failedNetworkRequests, consoleErrors, consoleWarnings,
+  });
+
+  makeIssueCreationRequest({ jiraUrl, body, recordingUrl })
+    .then((response) => handleSuccessfulCreation({ response, jiraUrl }))
+    .catch(() => {
+      formHelperError.innerHTML = 'There was an unexpected error creating the issue. Please try again';
+      formHelperError.classList.remove('is-hidden');
+    });
 };
 
 // TODO: REFACTOR
